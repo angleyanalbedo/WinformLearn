@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer", "UdpServer\UdpS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractStructFromXml", "ExtractStructFromXml\ExtractStructFromXml.csproj", "{B9686D34-EA4B-4BFB-9036-0ECF450A0922}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObservableContainer", "ObservableContainer\ObservableContainer.csproj", "{AA51645E-16EF-4D2C-853E-8C0E6AF4A696}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA51645E-16EF-4D2C-853E-8C0E6AF4A696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA51645E-16EF-4D2C-853E-8C0E6AF4A696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA51645E-16EF-4D2C-853E-8C0E6AF4A696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA51645E-16EF-4D2C-853E-8C0E6AF4A696}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
