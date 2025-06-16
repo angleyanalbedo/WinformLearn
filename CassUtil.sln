@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer", "UdpServer\UdpServer.csproj", "{58EA4369-6B64-4708-9D0B-876695AD30B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractStructFromXml", "ExtractStructFromXml\ExtractStructFromXml.csproj", "{B9686D34-EA4B-4BFB-9036-0ECF450A0922}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{58EA4369-6B64-4708-9D0B-876695AD30B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58EA4369-6B64-4708-9D0B-876695AD30B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58EA4369-6B64-4708-9D0B-876695AD30B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9686D34-EA4B-4BFB-9036-0ECF450A0922}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
