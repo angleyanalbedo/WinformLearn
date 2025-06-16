@@ -113,7 +113,7 @@ namespace ObservableContainer
 
         public void ResetSubscriptions()
         {
-            DictionaryChanged = null;
+            DictionaryChanged = delegate { };
         }
     }
 }
