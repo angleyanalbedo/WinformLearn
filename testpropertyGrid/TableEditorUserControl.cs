@@ -31,32 +31,38 @@ namespace testpropertyGrid
         }
         private void SetupDataGridView()
         {
-            dataGridView.AutoGenerateColumns = true;
+            dataGridView.AutoGenerateColumns = false;
             dataGridView.Columns.Clear();
+            dataGridView.AllowUserToAddRows = false;
+            dataGridView.AllowUserToDeleteRows = false;
+            // 关闭选择列（如果存在）
+            if (dataGridView.Columns.Contains("选择列"))
+            {
+                dataGridView.Columns.Remove("选择列");
+            }
+            // 添加列
+            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "变量名",
+                DataPropertyName = "Name",
+                Width = 150
+            });
 
-            //// 添加列
-            //dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            //{
-            //    HeaderText = "变量名",
-            //    DataPropertyName = "Name",
-            //    Width = 150
-            //});
+            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "值",
+                DataPropertyName = "Value",
+                Width = 200
+            });
 
-            //dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            //{
-            //    HeaderText = "值",
-            //    DataPropertyName = "Value",
-            //    Width = 200
-            //});
-
-            //var typeColumn = new DataGridViewComboBoxColumn
-            //{
-            //    HeaderText = "类型",
-            //    DataPropertyName = "Type",
-            //    DataSource = new List<string> { "string", "int", "bool", "double", "datetime" },
-            //    Width = 100
-            //};
-            //dataGridView.Columns.Add(typeColumn);
+            var typeColumn = new DataGridViewComboBoxColumn
+            {
+                HeaderText = "类型",
+                DataPropertyName = "Type",
+                DataSource = new List<string> { "string", "int", "bool", "double", "datetime" },
+                Width = 100
+            };
+            dataGridView.Columns.Add(typeColumn);
 
             //// 添加操作按钮列
             //var actionColumn = new DataGridViewButtonColumn
@@ -69,7 +75,7 @@ namespace testpropertyGrid
             //dataGridView.Columns.Add(actionColumn);
         }
 
-        // 删除按钮处理
+        //删除按钮处理
         private void dataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == dataGridView.Columns.Cast<DataGridViewColumn>()
