@@ -63,7 +63,17 @@ namespace testpropertyGrid
 
             // 创建编辑器控件
             var editorControl = new TableEditorUserControl(collection);
-            editorControl.Size = new Size(600, 400);
+
+            // 自动适应内容大小
+            editorControl.AutoSize = true;
+            editorControl.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
+            // 计算合适的下拉尺寸（可根据控件内容动态调整）
+            Size preferredSize = editorControl.PreferredSize;
+            int maxWidth = 800, maxHeight = 600; // 可根据需要设定最大值
+            int width = Math.Min(preferredSize.Width, maxWidth);
+            int height = Math.Min(preferredSize.Height, maxHeight);
+            editorControl.Size = new Size(width, height);
 
             // 设置保存事件
             editorControl.SaveRequested += (s, e) =>

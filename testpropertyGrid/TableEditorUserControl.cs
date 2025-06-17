@@ -31,42 +31,42 @@ namespace testpropertyGrid
         }
         private void SetupDataGridView()
         {
-            dataGridView.AutoGenerateColumns = false;
+            dataGridView.AutoGenerateColumns = true;
             dataGridView.Columns.Clear();
 
-            // 添加列
-            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                HeaderText = "变量名",
-                DataPropertyName = "Name",
-                Width = 150
-            });
+            //// 添加列
+            //dataGridView.Columns.Add(new DataGridViewTextBoxColumn
+            //{
+            //    HeaderText = "变量名",
+            //    DataPropertyName = "Name",
+            //    Width = 150
+            //});
 
-            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                HeaderText = "值",
-                DataPropertyName = "Value",
-                Width = 200
-            });
+            //dataGridView.Columns.Add(new DataGridViewTextBoxColumn
+            //{
+            //    HeaderText = "值",
+            //    DataPropertyName = "Value",
+            //    Width = 200
+            //});
 
-            var typeColumn = new DataGridViewComboBoxColumn
-            {
-                HeaderText = "类型",
-                DataPropertyName = "Type",
-                DataSource = new List<string> { "string", "int", "bool", "double", "datetime" },
-                Width = 100
-            };
-            dataGridView.Columns.Add(typeColumn);
+            //var typeColumn = new DataGridViewComboBoxColumn
+            //{
+            //    HeaderText = "类型",
+            //    DataPropertyName = "Type",
+            //    DataSource = new List<string> { "string", "int", "bool", "double", "datetime" },
+            //    Width = 100
+            //};
+            //dataGridView.Columns.Add(typeColumn);
 
-            // 添加操作按钮列
-            var actionColumn = new DataGridViewButtonColumn
-            {
-                HeaderText = "操作",
-                Text = "删除",
-                UseColumnTextForButtonValue = true,
-                Width = 80
-            };
-            dataGridView.Columns.Add(actionColumn);
+            //// 添加操作按钮列
+            //var actionColumn = new DataGridViewButtonColumn
+            //{
+            //    HeaderText = "操作",
+            //    Text = "删除",
+            //    UseColumnTextForButtonValue = true,
+            //    Width = 80
+            //};
+            //dataGridView.Columns.Add(actionColumn);
         }
 
         // 删除按钮处理
