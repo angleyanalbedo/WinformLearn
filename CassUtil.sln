@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testDataGridView", "testDat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "propertywindowsshowobject", "propertywindowsshowobject\propertywindowsshowobject.csproj", "{A1018EB4-BA65-47E1-A0E0-73398F15C2B9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI相关", "UI相关", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructViewer", "StructViewer\StructViewer.csproj", "{59836EF4-07B5-44DE-9A75-EC1E0752FC6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +49,18 @@ Global
 		{A1018EB4-BA65-47E1-A0E0-73398F15C2B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1018EB4-BA65-47E1-A0E0-73398F15C2B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1018EB4-BA65-47E1-A0E0-73398F15C2B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59836EF4-07B5-44DE-9A75-EC1E0752FC6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59836EF4-07B5-44DE-9A75-EC1E0752FC6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59836EF4-07B5-44DE-9A75-EC1E0752FC6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59836EF4-07B5-44DE-9A75-EC1E0752FC6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1ED27686-C93E-4958-98DB-F084DD9046EA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{90D1A0A8-6BD0-48C8-88BD-8DDCDDE0A84C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A1018EB4-BA65-47E1-A0E0-73398F15C2B9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE8A3788-D980-4772-8CAE-6885A2FFEEEF}

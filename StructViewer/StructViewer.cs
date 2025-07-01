@@ -106,6 +106,10 @@ namespace StructViewer
         private void SearchBox_TextChanged(object sender, EventArgs e)
         {
             var searchText = ((ToolStripTextBox)sender).Text.ToLower();
+            if (String.IsNullOrEmpty(searchText)||searchText==" ")
+            {
+                return;
+            }
 
             foreach (TreeNode namespaceNode in StructTreeView.Nodes)
             {
