@@ -105,9 +105,10 @@ namespace StructViewer
         }
         private void SearchBox_TextChanged(object sender, EventArgs e)
         {
-            var searchText = ((ToolStripTextBox)sender).Text.ToLower();
+             var searchText = ((ToolStripTextBox)sender).Text.ToLower();
             if (String.IsNullOrEmpty(searchText)||searchText==" ")
             {
+                StructTreeView.BackColor = Color.White;
                 return;
             }
 
