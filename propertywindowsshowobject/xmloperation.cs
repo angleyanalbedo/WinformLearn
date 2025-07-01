@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace XmlOperation
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+    
     public class Decl
     {
         public string Name { get; set; }
@@ -17,7 +17,7 @@ namespace XmlOperation
         public string Value { get; set; }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+    
     public class Struct
     {
         public string Name { get; set; }

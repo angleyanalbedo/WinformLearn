@@ -1,9 +1,11 @@
-﻿using System;
+﻿using propertywindowsshowobject;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace propertywindowsshowobject
+namespace StructWrapper
 {
     // 包装Decl列表为可展开属性
     public class DeclListWrapper : ICustomTypeDescriptor
@@ -188,6 +190,99 @@ namespace propertywindowsshowobject
         public override bool ShouldSerializeValue(object component) => false;
     }
 
+    public class PersonListWrapper
+    {
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public List<Person> Persons { get; set; }
+        public PersonListWrapper(List<Person> persons)
+        {
+            Persons = persons;
+        }
+    }
+}
+namespace propertywindowsshowobject
+{
+    public class ExpandableListConverter : TypeConverter
+    {
+        public override bool GetPropertiesSupported(ITypeDescriptorContext context)
+        {
+            return true; // 允许展开
+        }
+
+        public override PropertyDescriptorCollection GetProperties(
+            ITypeDescriptorContext context,
+            object value,
+            Attribute[] attributes)
+        {
+            var list = value as IList;
+            if (list == null)
+                return base.GetProperties(context, value, attributes);
+
+            // 为每个元素创建属性描述符
+            var props = new List<PropertyDescriptor>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                props.Add(new ListItemPropertyDescriptor(list, i));
+            }
+            return new PropertyDescriptorCollection(props.ToArray());
+        }
+    }
+
+    // List元素的PropertyDescriptor
+    public class ListItemPropertyDescriptor : PropertyDescriptor
+    {
+        private IList _list;
+        private int _index;
+
+        public ListItemPropertyDescriptor(IList list, int index)
+            : base($"[{index}]", null)
+        {
+            _list = list;
+            _index = index;
+        }
+
+        public override Type PropertyType => _list[_index]?.GetType() ?? typeof(object);
+        public override object GetValue(object component) => _list[_index];
+        public override void SetValue(object component, object value) => _list[_index] = value;
+        public override bool IsReadOnly => false;
+        public override Type ComponentType => _list.GetType();
+        public override bool CanResetValue(object component) => false;
+        public override void ResetValue(object component) { }
+        public override bool ShouldSerializeValue(object component) => true;
+    }
+    public class StructWrapper
+    {
+        private XmlOperation.Struct _struct;
+
+        public StructWrapper(XmlOperation.Struct s)
+        {
+            _struct = s;
+        }
+
+        [DisplayName("Name")]
+        public string Name
+        {
+            get => _struct.Name;
+            set => _struct.Name = value;
+        }
+
+        [DisplayName("Members")]
+        [TypeConverter(typeof(ExpandableListConverter))]
+        public List<XmlOperation.Decl> Members => _struct.Members;
+    }
+
+    public class StructListWrapper
+    {
+        private List<XmlOperation.Struct> _structs;
+
+        public StructListWrapper(List<XmlOperation.Struct> structs)
+        {
+            _structs = structs;
+        }
+
+        [TypeConverter(typeof(ExpandableListConverter))]
+        public List<StructWrapper> Structs => _structs.ConvertAll(s => new StructWrapper(s));
+    }
     public partial class StructsViewer : Form
     {
         public StructsViewer()
@@ -200,7 +295,14 @@ namespace propertywindowsshowobject
                 new XmlOperation.Struct { Name = "Struct2",Members = new List<XmlOperation.Decl>{ new XmlOperation.Decl { Name="a",Type="INT"} } },
                 new XmlOperation.Struct { Name = "Struct3",Members = new List<XmlOperation.Decl>{ new XmlOperation.Decl { Name="a",Type="INT"} } }
             };
-            
+            Person person = new Person("John Doe", 30, "123 Main St");
+            List<Person> personList = new List<Person>
+            {
+                person,
+                new Person("Jane Smith", 25, "456 Elm St"),
+                new Person("Alice Johnson", 28, "789 Oak St")
+            };
+
             // 使用StructListWrapper包装StructList
             propertyGrid1.SelectedObject = new StructListWrapper(GlobalValue.StructList);
         }
