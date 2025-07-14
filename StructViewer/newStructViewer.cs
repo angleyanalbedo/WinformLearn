@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace StructViewer
 {
    
@@ -39,6 +40,9 @@ namespace StructViewer
         private ToolStrip tool;
         private StatusStrip status;
         private ToolStripTextBox searchBox;
+        private SplitContainer split;
+        //气泡提示
+        private NotifyIcon _ni;
 
         public newStructViewer()
         {
@@ -47,80 +51,133 @@ namespace StructViewer
             LoadSample();
         }
 
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_ni != null)
+            {
+                _ni.Dispose();
+                _ni = null; // Ensure the NotifyIcon is properly disposed and set to null
+            }
+            base.OnFormClosed(e);
+        }
+
+        //protected override void OnLoad(EventArgs e)
+        //{
+        //    base.OnLoad(e);
+        //    split.SplitterDistance = Math.Max(split.Panel1MinSize,
+        //                                      split.Width - split.Panel2MinSize);
+        //}
+
+        //protected override void OnResize(EventArgs e)
+        //{
+        //    base.OnResize(e);
+        //    split.SplitterDistance = Math.Max(split.Panel1MinSize,
+        //                                      split.Width - split.Panel2MinSize);
+        //}
         private void BuildUI()
         {
-            Text = "结构体浏览器（文件管理器风格）";
-            Size = new Size(900, 600);
+            /* ===== 窗口基础 ===== */
+            Text = "结构体浏览器";
+            Size = new Size(1000, 650);
             StartPosition = FormStartPosition.CenterScreen;
+            MinimumSize = new Size(800, 500);
+            BackColor = Color.FromArgb(248, 249, 250);        // 微软浅灰背景
 
-            /* 工具栏 */
+            /* ===== 通知图标 ===== */
+            InitNotifyIcon();
+
+            /* ===== 工具栏 ===== */
             tool = new ToolStrip
             {
+                BackColor = Color.FromArgb(240, 240, 240),
                 GripStyle = ToolStripGripStyle.Hidden,
-                RenderMode = ToolStripRenderMode.System
+                RenderMode = ToolStripRenderMode.Professional,
+                Font = new Font("Segoe UI", 9F)
             };
-            searchBox = new ToolStripTextBox { Width = 180 };
+
+            searchBox = new ToolStripTextBox
+            {
+                Width = 200,
+                BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font("Segoe UI", 9F)
+            };
             searchBox.TextChanged += (s, e) => ApplySearch(searchBox.Text);
+
             tool.Items.AddRange(new ToolStripItem[]
             {
-                new ToolStripLabel("搜索:"),
-                searchBox,
-                new ToolStripSeparator(),
-                new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.Text },
-                new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.Text }
+        new ToolStripLabel("搜索:") { ForeColor = Color.FromArgb(64,64,64)},
+        searchBox,
+        new ToolStripSeparator(),
+        new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Application.ToBitmap(), ImageTransparentColor = Color.Magenta },
+        new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Shield.ToBitmap(), ImageTransparentColor = Color.Magenta }
             });
-            
 
-            /* 主分割容器 */
-            var split = new SplitContainer
-            {
-                Dock = DockStyle.Fill,
-                Orientation = Orientation.Vertical,
-                SplitterDistance = 50
-            };
+            /* ===== 主容器：使用 ToolStripContainer（顶部工具栏 + 内容区） ===== */
+            var tsc = new ToolStripContainer { Dock = DockStyle.Fill };
+            tsc.TopToolStripPanel.Controls.Add(tool);
+            Controls.Add(tsc);
 
-            /* 把工具栏和 split 都放到一个 Panel 里 */
-            var mainPanel = new Panel { Dock = DockStyle.Fill };
-            mainPanel.Controls.Add(split);   // split 填充满 Panel
-            Controls.Add(mainPanel);         // 先加 Panel
-            Controls.Add(tool);              // 再加工具栏，工具栏会自然停靠在顶部
-
-            /* 左侧树 */
+            /* ===== 左侧树 ===== */
             tree = new TreeView
             {
                 Dock = DockStyle.Fill,
-                HideSelection = false,
+                BorderStyle = BorderStyle.None,
+                BackColor = Color.White,
+                Font = new Font("Segoe UI", 9.5F),
                 ShowLines = true,
-                ShowRootLines = false
+                ShowRootLines = false,
+                HideSelection = false,
+                DrawMode = TreeViewDrawMode.OwnerDrawText   // 下面画高亮
             };
             tree.AfterSelect += Tree_AfterSelect;
             tree.MouseUp += Tree_MouseUp;
-            split.Panel1.Controls.Add(tree);
 
-            /* 右侧列表 */
+            /* ===== 右侧列表 ===== */
             list = new ListView
             {
                 Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.None,
+                BackColor = Color.White,
+                Font = new Font("Segoe UI", 9.5F),
                 View = View.Details,
                 FullRowSelect = true,
-                GridLines = true,
-                MultiSelect = false
+                GridLines = false,                // 取消网格线更清爽
+                HeaderStyle = ColumnHeaderStyle.Nonclickable
             };
-            list.Columns.Add("名称", 120);
+            list.Columns.Add("名称", 150);
             list.Columns.Add("类型", 120);
-            list.Columns.Add("偏移", 60, HorizontalAlignment.Right);
-            list.Columns.Add("大小", 60, HorizontalAlignment.Right);
-            list.Columns.Add("备注", 200);
+            list.Columns.Add("偏移", 70, HorizontalAlignment.Right);
+            list.Columns.Add("大小", 70, HorizontalAlignment.Right);
+            list.Columns.Add("备注", -2);           // -2 = 填满剩余宽度
             list.DoubleClick += List_DoubleClick;
-
-            
             list.MouseUp += List_MouseUp;
-            split.Panel2.Controls.Add(list);
 
-            /* 状态栏 */
-            status = new StatusStrip();
-            status.Items.Add(new ToolStripStatusLabel("就绪"));
-            Controls.Add(status);
+            /* ===== 分割容器 ===== */
+            split = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Vertical,
+                //SplitterDistance = 280,          // 合理初始宽度
+                //Panel1MinSize = 100,
+                //Panel2MinSize = 300,
+                BackColor = Color.FromArgb(233, 236, 239)   // 分割线颜色
+            };
+            split.Panel1.Controls.Add(tree);
+            split.Panel2.Controls.Add(list);
+            tsc.ContentPanel.Controls.Add(split);
+
+            /* ===== 状态栏 ===== */
+            status = new StatusStrip
+            {
+                BackColor = Color.FromArgb(240, 240, 240),
+                Font = new Font("Segoe UI", 9F)
+            };
+            status.Items.Add(new ToolStripStatusLabel("就绪") { Spring = true });
+
+            tsc.BottomToolStripPanel.Controls.Add(status);
+
+            /* ===== 加载数据 ===== */
+            LoadSample();
         }
 
         /* ===== 示例数据 ===== */
@@ -271,6 +328,13 @@ namespace StructViewer
                 t.Stop();
                 t.Dispose();
             };
+
+            // 显示气泡，3 秒后自动消失
+            _ni.ShowBalloonTip(
+                timeout: 3000,
+                tipTitle: "复制成功",
+                tipText: $"已复制到剪贴板：{txt}",
+                tipIcon: ToolTipIcon.Info);
         }
 
         /* ===== 工具栏复制 ===== */
@@ -335,6 +399,17 @@ namespace StructViewer
             });
 
             cms.Show(tree, e.Location);
+        }
+
+        /*===气泡提示初始化==*/
+        private void InitNotifyIcon()
+        {
+            _ni = new NotifyIcon
+            {
+                Visible = true,
+                Icon = SystemIcons.Application,   // 用系统图标即可
+                Text = "结构体查看器"
+            };
         }
 
     }
