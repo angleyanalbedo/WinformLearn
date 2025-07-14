@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -129,6 +130,12 @@ namespace StructViewer
                 HideSelection = false,
                 DrawMode = TreeViewDrawMode.OwnerDrawText   // 下面画高亮
             };
+            tree.FullRowSelect = true;
+            tree.HotTracking = true;                            // 悬浮高亮
+            tree.ShowLines = false;                           // 去掉连线
+            tree.ShowPlusMinus = false;                           // 去掉 +/-
+            tree.Font = new Font("Segoe UI Variable", 9.75f, FontStyle.Regular);
+            tree.ItemHeight = tree.Font.Height + 8;            // 行高 = 字体高 + 8
             tree.AfterSelect += Tree_AfterSelect;
             tree.MouseUp += Tree_MouseUp;
             tree.DrawNode += Tree_DrawNode;
@@ -415,33 +422,48 @@ namespace StructViewer
 
         private void Tree_DrawNode(object sender, DrawTreeNodeEventArgs e)
         {
-            var g = e.Graphics;
-            var bounds = e.Bounds;
+            Graphics g = e.Graphics;
+            Rectangle r = e.Bounds;
 
-            /* === 背景 === */
-            Color backColor;
+            // 背景填充
+            Color back;
             if ((e.State & TreeNodeStates.Selected) != 0)
-                backColor = Color.FromArgb(0, 120, 215);        // 选中蓝
+                back = Color.FromArgb(0x99, 0xCB, 0xFF);          // Win11 选中蓝
             else if ((e.State & TreeNodeStates.Hot) != 0)
-                backColor = Color.FromArgb(229, 243, 255);        // 悬浮淡蓝
+                back = Color.FromArgb(0xF3, 0xF3, 0xF3);          // 悬浮淡灰
             else
-                backColor = e.Node.Index % 2 == 0 ? Color.White   // 交替
-                                                   : Color.FromArgb(245, 245, 245);
+                back = Color.White;
 
-            using (var brush = new SolidBrush(backColor))
-                g.FillRectangle(brush, bounds);
+            using (var path = RoundedRect(r, 4))
+            using (var br = new SolidBrush(back))
+            {
+                g.FillPath(br, path);
+            }
 
-            /* === 文字 === */
-            Color foreColor = (e.State & TreeNodeStates.Selected) != 0
-                              ? Color.White : Color.Black;
+            // 文字
+            Color fore = (e.State & TreeNodeStates.Selected) != 0
+                         ? Color.Black
+                         : Color.FromArgb(0x1F, 0x1F, 0x1F);
 
-            TextRenderer.DrawText(
-                g,
-                e.Node.Text,
-                e.Node.TreeView.Font,
-                bounds,
-                foreColor,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+            TextRenderer.DrawText(g,
+                                  e.Node.Text,
+                                  e.Node.TreeView.Font,
+                                  r,
+                                  fore,
+                                  TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+        }
+
+        // 生成圆角矩形路径
+        private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+        {
+            var path = new GraphicsPath();
+            int d = radius * 2;
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
         }
     }
 }
