@@ -166,40 +166,61 @@ namespace StructViewer
                 foreach (var st in g)
                 {
                     var stNode = new TreeNode(st.Name) { Tag = st };
+                    // 把成员也挂到结构体节点下
+                    foreach (var m in st.Members)
+                    {
+                        var memberNode = new TreeNode(m.Name) { Tag = m };
+                        stNode.Nodes.Add(memberNode);
+                    }
                     nsNode.Nodes.Add(stNode);
                 }
                 tree.Nodes.Add(nsNode);
             }
 
-            tree.ExpandAll();
-            if (tree.Nodes.Count > 0)
-                tree.SelectedNode = tree.Nodes[0].Nodes[0];
+            tree.ExpandAll();                               // 展开全部
+            if (tree.Nodes.Count > 0 && tree.Nodes[0].Nodes.Count > 0)
+                tree.SelectedNode = tree.Nodes[0].Nodes[0]; // 默认选中第一个结构体
             tree.EndUpdate();
         }
 
         /* ===== 选中结构体后刷新列表 ===== */
         private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (e.Node.Tag is StructInfo st)
+            list.BeginUpdate();
+            list.Items.Clear();
+
+            switch (e.Node.Tag)
             {
-                list.BeginUpdate();
-                list.Items.Clear();
+                case StructInfo st:
+                    // 显示该结构体的所有成员
+                    foreach (var m in st.Members)
+                        AddMemberToList(m);
+                    status.Items[0].Text = $"结构体: {st.Name}, 大小: {st.Size} bytes, 成员: {st.Members.Count}";
+                    break;
 
-                foreach (var m in st.Members)
-                {
-                    var lvi = new ListViewItem(m.Name);
-                    lvi.SubItems.Add(m.Type);
-                    lvi.SubItems.Add(m.Offset.ToString());
-                    lvi.SubItems.Add(m.Size.ToString());
-                    lvi.SubItems.Add(m.Comment ?? "");
-                    lvi.Tag = m;
-                    list.Items.Add(lvi);
-                }
+                case MemberInfo m:
+                    // 只显示这一条成员
+                    AddMemberToList(m);
+                    status.Items[0].Text = $"成员: {m.Name}  (偏移 {m.Offset}, 大小 {m.Size})";
+                    break;
 
-                /* 更新状态栏 */
-                status.Items[0].Text = $"结构体: {st.Name}, 大小: {st.Size} bytes, 成员: {st.Members.Count}";
-                list.EndUpdate();
+                default:
+                    status.Items[0].Text = "就绪";
+                    break;
             }
+
+            list.EndUpdate();
+        }
+
+        private void AddMemberToList(MemberInfo m)
+        {
+            var lvi = new ListViewItem(m.Name);
+            lvi.SubItems.Add(m.Type);
+            lvi.SubItems.Add(m.Offset.ToString());
+            lvi.SubItems.Add(m.Size.ToString());
+            lvi.SubItems.Add(m.Comment ?? "");
+            lvi.Tag = m;
+            list.Items.Add(lvi);
         }
 
         /* ===== 搜索高亮 ===== */
