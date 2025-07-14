@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="newStructViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="newStructViewer.Designer.cs">
+      <DependentUpon>newStructViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="StructViewer.cs" />
     <Compile Include="StructViewer.Designer.cs">
       <DependentUpon>StructViewer.cs</DependentUpon>
