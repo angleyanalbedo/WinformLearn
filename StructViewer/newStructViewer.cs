@@ -94,6 +94,7 @@ namespace StructViewer
                 ShowRootLines = false
             };
             tree.AfterSelect += Tree_AfterSelect;
+            tree.MouseUp += Tree_MouseUp;
             split.Panel1.Controls.Add(tree);
 
             /* 右侧列表 */
@@ -111,6 +112,9 @@ namespace StructViewer
             list.Columns.Add("大小", 60, HorizontalAlignment.Right);
             list.Columns.Add("备注", 200);
             list.DoubleClick += List_DoubleClick;
+
+            
+            list.MouseUp += List_MouseUp;
             split.Panel2.Controls.Add(list);
 
             /* 状态栏 */
@@ -264,5 +268,61 @@ namespace StructViewer
             else if (list.SelectedItems.Count > 0)
                 Clipboard.SetText(list.SelectedItems[0].Text);
         }
+
+        // ListView右键
+        private void List_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            var hit = list.HitTest(e.Location);
+            if (hit.Item == null) return;          // 没点到行
+
+            // 选中当前行（可选）
+            hit.Item.Selected = true;
+
+            // 动态创建菜单
+            var cms = new ContextMenuStrip();
+            cms.Items.Add("复制名称", null, (_, __) =>
+                Clipboard.SetText(hit.Item.Text));
+            cms.Items.Add("复制类型", null, (_, __) =>
+                Clipboard.SetText(hit.Item.SubItems[1].Text));
+            cms.Items.Add("复制偏移", null, (_, __) =>
+                Clipboard.SetText(hit.Item.SubItems[2].Text));
+            cms.Items.Add("复制大小", null, (_, __) =>
+                Clipboard.SetText(hit.Item.SubItems[3].Text));
+
+            // 在鼠标位置弹出
+            cms.Show(list, e.Location);
+        }
+
+        // TreeView右键
+        private void Tree_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            var hit = tree.HitTest(e.Location);
+            if (hit.Node == null) return;
+
+            tree.SelectedNode = hit.Node;   // 修复：使用 TreeView 的 SelectedNode 属性来设置选中节点
+
+            // 仅复制名称
+            var cms = new ContextMenuStrip();
+            cms.Items.Add("复制名称", null, (_, __) =>
+            {
+                string text;
+                if (hit.Node.Tag is StructInfo si)
+                    text = si.Name;
+                else if (hit.Node.Tag is MemberInfo mi)
+                    text = mi.Name;
+                else
+                    text = hit.Node.Text;
+
+                Clipboard.SetText(text);
+                Clipboard.SetText(text);
+            });
+
+            cms.Show(tree, e.Location);
+        }
+
     }
 }
