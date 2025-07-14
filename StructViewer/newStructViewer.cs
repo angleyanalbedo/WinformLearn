@@ -256,8 +256,21 @@ namespace StructViewer
         /* ===== 双击成员复制名称 ===== */
         private void List_DoubleClick(object sender, EventArgs e)
         {
-            if (list.SelectedItems.Count > 0)
-                Clipboard.SetText(list.SelectedItems[0].Text);
+            if (list.SelectedItems.Count == 0) return;
+
+            string txt = list.SelectedItems[0].Text;
+            Clipboard.SetText(txt);
+
+            // 反馈：状态栏 3 秒后自动恢复
+            var old = status.Items[0].Text;
+            status.Items[0].Text = $"已复制: {txt}";
+            var t = new System.Windows.Forms.Timer { Interval = 3000, Enabled = true };
+            t.Tick += (_, __) =>
+            {
+                status.Items[0].Text = old;
+                t.Stop();
+                t.Dispose();
+            };
         }
 
         /* ===== 工具栏复制 ===== */
