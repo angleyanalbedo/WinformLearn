@@ -131,6 +131,7 @@ namespace StructViewer
             };
             tree.AfterSelect += Tree_AfterSelect;
             tree.MouseUp += Tree_MouseUp;
+            tree.DrawNode += Tree_DrawNode;
 
             /* ===== 右侧列表 ===== */
             list = new ListView
@@ -412,5 +413,35 @@ namespace StructViewer
             };
         }
 
+        private void Tree_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            var g = e.Graphics;
+            var bounds = e.Bounds;
+
+            /* === 背景 === */
+            Color backColor;
+            if ((e.State & TreeNodeStates.Selected) != 0)
+                backColor = Color.FromArgb(0, 120, 215);        // 选中蓝
+            else if ((e.State & TreeNodeStates.Hot) != 0)
+                backColor = Color.FromArgb(229, 243, 255);        // 悬浮淡蓝
+            else
+                backColor = e.Node.Index % 2 == 0 ? Color.White   // 交替
+                                                   : Color.FromArgb(245, 245, 245);
+
+            using (var brush = new SolidBrush(backColor))
+                g.FillRectangle(brush, bounds);
+
+            /* === 文字 === */
+            Color foreColor = (e.State & TreeNodeStates.Selected) != 0
+                              ? Color.White : Color.Black;
+
+            TextRenderer.DrawText(
+                g,
+                e.Node.Text,
+                e.Node.TreeView.Font,
+                bounds,
+                foreColor,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+        }
     }
 }
