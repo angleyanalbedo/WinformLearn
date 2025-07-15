@@ -128,15 +128,15 @@ namespace StructViewer
                 BorderStyle = BorderStyle.None,
                 BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
-                ShowLines = true,
-                ShowRootLines = false,
+                ShowLines = false,
+                ShowRootLines = false,                      // 去掉连线
                 HideSelection = false,
-                DrawMode = TreeViewDrawMode.OwnerDrawText   // 下面画高亮
+                DrawMode = TreeViewDrawMode.OwnerDrawText   // 自己控制绘画
             };
-            tree.FullRowSelect = true;
-            tree.HotTracking = true;                            // 悬浮高亮
-            tree.ShowLines = false;                           // 去掉连线
+            tree.FullRowSelect = false;
+            tree.HotTracking = false;                            // 悬浮高亮                     
             tree.ShowPlusMinus = false;                           // 去掉 +/-
+            tree.BackColor = Color.White;
             tree.Font = new Font("Segoe UI Variable", 9.75f, FontStyle.Regular);
             tree.ItemHeight = tree.Font.Height + 8;            // 行高 = 字体高 + 8
             tree.AfterSelect += Tree_AfterSelect;
@@ -152,7 +152,7 @@ namespace StructViewer
                 BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
                 View = View.Details,
-                FullRowSelect = true,
+                FullRowSelect = false,
                 GridLines = false,                // 取消网格线更清爽
                 HeaderStyle = ColumnHeaderStyle.Clickable //设置可以点击
             };
@@ -164,6 +164,11 @@ namespace StructViewer
             list.DoubleClick += List_DoubleClick;
             list.MouseUp += List_MouseUp;
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
+
+            list.OwnerDraw = true;                 // 开启自定义绘制
+            list.DrawItem += List_DrawItem;
+            list.DrawSubItem += List_DrawSubItem;
+            list.DrawColumnHeader += List_DrawColumnHeader;
 
             /* ===== 分割容器 ===== */
             split = new SplitContainer
@@ -452,7 +457,7 @@ namespace StructViewer
 
 
             // 背景矩形需要减去箭头的宽度
-            int arrowWidth = e.Node.Nodes.Count > 0 ? 18 : 0; // 箭头宽度
+            int arrowWidth = e.Node.Nodes.Count > 0 ? 20 : 0; // 箭头宽度
             Rectangle backgroundRect = new Rectangle(r.X + arrowWidth, r.Y, r.Width + arrowWidth, r.Height);
 
             using (var path = RoundedRect(backgroundRect, 4))
@@ -534,7 +539,38 @@ namespace StructViewer
             list.ListViewItemSorter = new ListViewItemComparer(e.Column, list.Sorting);
             list.Sort();
         }
+
+        private void List_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            using (var brush = new SolidBrush(Color.FromArgb(240, 240, 240)))
+            using (var textBrush = new SolidBrush(Color.Black))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, e.Header.Text, list.Font, e.Bounds, Color.Black);
+            }
+        }
+
+        private void List_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            using (var brush = new SolidBrush(Color.White))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+        }
+
+        private void List_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            // 根据行索引的奇偶性设置背景色
+            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            using (var brush = new SolidBrush(backColor))
+            using (var textBrush = new SolidBrush(Color.Black))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, Color.Black);
+            }
+        }
     }
+
     public class ListViewItemComparer : IComparer
     {
         private int col;
