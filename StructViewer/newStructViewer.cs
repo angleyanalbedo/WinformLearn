@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -153,7 +154,7 @@ namespace StructViewer
                 View = View.Details,
                 FullRowSelect = true,
                 GridLines = false,                // 取消网格线更清爽
-                HeaderStyle = ColumnHeaderStyle.Nonclickable
+                HeaderStyle = ColumnHeaderStyle.Clickable //设置可以点击
             };
             list.Columns.Add("名称", 150);
             list.Columns.Add("类型", 120);
@@ -162,6 +163,7 @@ namespace StructViewer
             list.Columns.Add("备注", -2);           // -2 = 填满剩余宽度
             list.DoubleClick += List_DoubleClick;
             list.MouseUp += List_MouseUp;
+            list.ColumnClick += List_ColumnClick;  // 注册排序事件
 
             /* ===== 分割容器 ===== */
             split = new SplitContainer
@@ -516,6 +518,51 @@ namespace StructViewer
                 else
                     e.Node.Expand();
             }
+        }
+
+        private void List_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (list.Sorting == SortOrder.Ascending)
+            {
+                list.Sorting = SortOrder.Descending;
+            }
+            else
+            {
+                list.Sorting = SortOrder.Ascending;
+            }
+
+            list.ListViewItemSorter = new ListViewItemComparer(e.Column, list.Sorting);
+            list.Sort();
+        }
+    }
+    public class ListViewItemComparer : IComparer
+    {
+        private int col;
+        private SortOrder order;
+
+        public ListViewItemComparer(int column, SortOrder order)
+        {
+            col = column;
+            this.order = order;
+        }
+
+        public int Compare(object x, object y)
+        {
+            ListViewItem item1 = x as ListViewItem;
+            ListViewItem item2 = y as ListViewItem;
+
+            if (item1 == null || item2 == null)
+                return 0;
+
+            string text1 = item1.SubItems[col].Text;
+            string text2 = item2.SubItems[col].Text;
+
+            int result = string.Compare(text1, text2, StringComparison.OrdinalIgnoreCase);
+
+            if (order == SortOrder.Descending)
+                result = -result;
+
+            return result;
         }
     }
 }
