@@ -46,6 +46,8 @@ namespace StructViewer
         //气泡提示
         private NotifyIcon _ni;
 
+        private ListViewItem hoveredItem = null;
+
         public newStructViewer()
         {
             InitializeComponent();
@@ -164,9 +166,15 @@ namespace StructViewer
             list.Columns.Add("偏移", 70, HorizontalAlignment.Right);
             list.Columns.Add("大小", 70, HorizontalAlignment.Right);
             list.Columns.Add("备注", -2);           // -2 = 填满剩余宽度
+
+            list.HideSelection = true;
+
             list.DoubleClick += List_DoubleClick;
             list.MouseUp += List_MouseUp;
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
+            list.MouseEnter += List_MouseEnter;
+            list.MouseLeave += List_MouseLeave;
+            list.MouseMove += List_MouseMove;
 
 
             list.DrawItem += List_DrawItem;
@@ -176,6 +184,7 @@ namespace StructViewer
             
 
             list.MouseClick += List_MouseClick;  // Replace ItemMouseClick with MouseClick
+
 
 
             /* ===== 分割容器 ===== */
@@ -592,52 +601,50 @@ namespace StructViewer
 
         private void List_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            // 设置背景色和文字颜色
+            // 设置背景色
             Color backColor;
-            Color foreColor;
-
             if (e.Item.Selected)
             {
                 backColor = Color.FromArgb(0x99, 0xCB, 0xFF);  // 选中背景色
-                foreColor = Color.White;  // 选中文字色
+            }
+            else if (e.Item == hoveredItem)
+            {
+                backColor = Color.LightBlue;  // 鼠标悬停背景色
             }
             else
             {
                 backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);  // 交替背景色
-                foreColor = Color.Black;  // 默认文字色
             }
 
             using (var brush = new SolidBrush(backColor))
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
             }
+
+            // 不使用系统默认绘制
+            e.DrawDefault = false;
         }
 
         private void List_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            // 设置背景色和文字颜色
-            Color backColor;
+            // 设置文字颜色
             Color foreColor;
-
-            // 检查当前项是否被选中
-            if (e.Item.Selected)
+            if (e.Item.Selected || e.Item == hoveredItem)
             {
-                backColor = Color.FromArgb(0x99, 0xCB, 0xFF);  // 选中背景色
-                foreColor = Color.White;  // 选中文字色
+                foreColor = Color.White;  // 选中或悬停时的文字色
             }
             else
             {
-                backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);  // 交替背景色
                 foreColor = Color.Black;  // 默认文字色
             }
 
-            using (var brush = new SolidBrush(backColor))
             using (var textBrush = new SolidBrush(foreColor))
             {
-                e.Graphics.FillRectangle(brush, e.Bounds);
                 TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, foreColor);
             }
         }
+
+
 
         private void List_MouseClick(object sender, MouseEventArgs e)
         {
@@ -648,6 +655,29 @@ namespace StructViewer
                 hit.Item.Selected = true;
             }
         }
+
+        private void List_MouseEnter(object sender, EventArgs e)
+        {
+            var pt = list.PointToClient(Cursor.Position);
+            hoveredItem = list.GetItemAt(pt.X, pt.Y);
+            list.Invalidate();  // 触发重绘
+        }
+
+        private void List_MouseLeave(object sender, EventArgs e)
+        {
+            hoveredItem = null;
+            list.Invalidate();  // 触发重绘
+        }
+        private void List_MouseMove(object sender, MouseEventArgs e)
+        {
+            var hit = list.HitTest(e.Location);
+            if (hit.Item != hoveredItem)
+            {
+                hoveredItem = hit.Item;
+                list.Invalidate();  // 触发重绘
+            }
+        }
+
     }
     public class ListViewItemComparer : IComparer
     {
