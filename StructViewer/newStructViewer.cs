@@ -105,7 +105,7 @@ namespace StructViewer
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 9F)
             };
-           // searchBox.TextChanged += (s, e) => ApplySearch(searchBox.Text);
+            searchBox.KeyDown += SearchBox_KeyDown;
 
             tool.Items.AddRange(new ToolStripItem[]
             {
@@ -322,30 +322,41 @@ namespace StructViewer
 
         }
 
-        /* ===== 搜索高亮 ===== */
-        private void ApplySearch(string text)
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                foreach (TreeNode ns in tree.Nodes)
-                    foreach (TreeNode st in ns.Nodes)
-                        st.BackColor = SystemColors.Window;
-                return;
-            }
+            if (e.KeyCode != Keys.Enter) return;
 
-            var low = text.ToLower();
-            foreach (TreeNode ns in tree.Nodes)
+            string keyword = searchBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(keyword)) return;
+
+            // 从根开始搜索
+            TreeNode found = FindFirstNode(tree.Nodes, n =>
+                n.Text.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                (n.Tag is StructInfo st && st.Members.Any(m =>
+                    m.Name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    m.Type.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)));
+
+            if (found != null)
             {
-                foreach (TreeNode st in ns.Nodes)
-                {
-                    st.BackColor =
-                        st.Text.ToLower().Contains(low) ||
-                        ((StructInfo)st.Tag).Members.Any(m =>
-                            m.Name.ToLower().Contains(low) ||
-                            m.Type.ToLower().Contains(low))
-                        ? Color.Yellow : SystemColors.Window;
-                }
+                tree.SelectedNode = found;   // 选中
+                found.EnsureVisible();       // 滚动到视野
             }
+        }
+
+        // 递归搜索
+        // 把递归顺序调过来：先子后父 防止永远只找到上一级
+        private TreeNode FindFirstNode(TreeNodeCollection nodes, Func<TreeNode, bool> predicate)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                // 1) 先往下找
+                TreeNode child = FindFirstNode(n.Nodes, predicate);
+                if (child != null) return child;
+
+                // 2) 再检查当前节点
+                if (predicate(n)) return n;
+            }
+            return null;
         }
 
         /* ===== 双击成员复制名称 ===== */
