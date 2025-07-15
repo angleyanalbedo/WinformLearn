@@ -51,6 +51,7 @@ namespace StructViewer
             BuildUI();
             LoadSample();
         }
+        
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
@@ -139,6 +140,7 @@ namespace StructViewer
             tree.AfterSelect += Tree_AfterSelect;
             tree.MouseUp += Tree_MouseUp;
             tree.DrawNode += Tree_DrawNode;
+            tree.NodeMouseClick += Tree_NodeMouseClick;
 
             /* ===== 右侧列表 ===== */
             list = new ListView
@@ -422,35 +424,57 @@ namespace StructViewer
 
         private void Tree_DrawNode(object sender, DrawTreeNodeEventArgs e)
         {
+           
+
             Graphics g = e.Graphics;
             Rectangle r = e.Bounds;
 
-            // 背景填充
-            Color back;
-            if ((e.State & TreeNodeStates.Selected) != 0)
-                back = Color.FromArgb(0x99, 0xCB, 0xFF);          // Win11 选中蓝
-            else if ((e.State & TreeNodeStates.Hot) != 0)
-                back = Color.FromArgb(0xF3, 0xF3, 0xF3);          // 悬浮淡灰
-            else
-                back = Color.White;
+            /* === 背景 === */
+            Color backColor = (e.State & TreeNodeStates.Selected) != 0
+                         ? Color.FromArgb(0x99, 0xCB, 0xFF)  // 选中为蓝色
+                         : (e.State & TreeNodeStates.Hot) != 0
+                           ? Color.FromArgb(0xF3, 0xF3, 0xF3)
+                           : Color.White;
 
-            using (var path = RoundedRect(r, 4))
-            using (var br = new SolidBrush(back))
+
+
+            // 背景矩形需要减去箭头的宽度
+            int arrowWidth = e.Node.Nodes.Count > 0 ? 16 : 0; // 箭头宽度
+            Rectangle backgroundRect = new Rectangle(r.X + arrowWidth, r.Y, r.Width + arrowWidth, r.Height);
+
+            using (var path = RoundedRect(backgroundRect, 4))
+            using (var br = new SolidBrush(backColor))
             {
                 g.FillPath(br, path);
             }
+            /* === 箭头位置 === */
+            int indent = 4;
+            int arrowLeft = r.X + indent;
+            int arrowTop = r.Y + (r.Height - 12) / 2;
+            if (e.Node.Nodes.Count > 0)
+            {
+                string arrow = e.Node.IsExpanded ? "▼" : "▶";
+                TextRenderer.DrawText(g, arrow,
+                                      new Font("Segoe UI Symbol", 9f),
+                                      new Point(arrowLeft, arrowTop),
+                                      Color.FromArgb(96, 96, 96));
+            }
 
-            // 文字
+            /* ===== 文字——用系统算好的“文本矩形” ===== */
+            Rectangle textRect = e.Bounds;
+            textRect.X += arrowWidth + 2;          // 避开箭头
+            textRect.Width += arrowWidth + 4;      // 再留 2 px 边距
+
             Color fore = (e.State & TreeNodeStates.Selected) != 0
-                         ? Color.Black
+                         ? Color.White
                          : Color.FromArgb(0x1F, 0x1F, 0x1F);
 
             TextRenderer.DrawText(g,
                                   e.Node.Text,
                                   e.Node.TreeView.Font,
-                                  r,
+                                  textRect,
                                   fore,
-                                  TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+                                  TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
         }
 
         // 生成圆角矩形路径
@@ -464,6 +488,23 @@ namespace StructViewer
             path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
             path.CloseFigure();
             return path;
+        }
+
+        private void Tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            /* 计算箭头区域 */
+            int indent = 4;
+            int arrowLeft = e.Node.Bounds.X + indent;
+            int arrowTop = e.Node.Bounds.Y + (e.Node.Bounds.Height - 12) / 2;
+            Rectangle arrowRect = new Rectangle(arrowLeft, arrowTop, 12, 12);
+
+            if (e.Node.Nodes.Count > 0 && arrowRect.Contains(e.Location))
+            {
+                if (e.Node.IsExpanded)
+                    e.Node.Collapse();
+                else
+                    e.Node.Expand();
+            }
         }
     }
 }
