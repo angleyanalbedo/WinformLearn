@@ -125,8 +125,7 @@ namespace StructViewer
             tree = new TreeView
             {
                 Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.None,
-                BackColor = Color.White,
+                BorderStyle = BorderStyle.Fixed3D,
                 Font = new Font("Segoe UI", 9.5F),
                 ShowLines = false,
                 ShowRootLines = false,                      // 去掉连线
@@ -152,7 +151,7 @@ namespace StructViewer
                 BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
                 View = View.Details,
-                FullRowSelect = false,
+                FullRowSelect = true,
                 GridLines = false,                // 取消网格线更清爽
                 HeaderStyle = ColumnHeaderStyle.Clickable //设置可以点击
             };
@@ -166,7 +165,7 @@ namespace StructViewer
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
 
             list.OwnerDraw = true;                 // 开启自定义绘制
-            list.DrawItem += List_DrawItem;
+            //list.DrawItem += List_DrawItem;
             list.DrawSubItem += List_DrawSubItem;
             list.DrawColumnHeader += List_DrawColumnHeader;
 
