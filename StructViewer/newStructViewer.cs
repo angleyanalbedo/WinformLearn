@@ -169,7 +169,7 @@ namespace StructViewer
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
 
 
-            //list.DrawItem += List_DrawItem;
+            list.DrawItem += List_DrawItem;
             list.DrawSubItem += List_DrawSubItem;
             list.DrawColumnHeader += List_DrawColumnHeader;
 
@@ -303,6 +303,18 @@ namespace StructViewer
             lvi.SubItems.Add(m.Comment ?? "");
             lvi.Tag = m;
             list.Items.Add(lvi);
+        }
+
+        private void AddStructToList(StructInfo s)
+        {
+            var lvi = new ListViewItem(s.Name);
+            lvi.SubItems.Add(s.Namespace);
+            lvi.SubItems.Add("0");
+            lvi.SubItems.Add(s.Size.ToString());
+            lvi.SubItems.Add( "");
+            lvi.Tag = s;
+            list.Items.Add(lvi);
+
         }
 
         /* ===== 搜索高亮 ===== */
@@ -564,8 +576,21 @@ namespace StructViewer
 
         private void List_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            // 根据行索引的奇偶性设置背景色
-            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            // 设置背景色和文字颜色
+            Color backColor;
+            Color foreColor;
+
+            if (e.Item.Selected)
+            {
+                backColor = Color.FromArgb(0x99, 0xCB, 0xFF);  // 选中背景色
+                foreColor = Color.White;  // 选中文字色
+            }
+            else
+            {
+                backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);  // 交替背景色
+                foreColor = Color.Black;  // 默认文字色
+            }
+
             using (var brush = new SolidBrush(backColor))
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
@@ -574,13 +599,27 @@ namespace StructViewer
 
         private void List_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            // 根据行索引的奇偶性设置背景色
-            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            // 设置背景色和文字颜色
+            Color backColor;
+            Color foreColor;
+
+            // 检查当前项是否被选中
+            if (e.Item.Selected)
+            {
+                backColor = Color.FromArgb(0x99, 0xCB, 0xFF);  // 选中背景色
+                foreColor = Color.White;  // 选中文字色
+            }
+            else
+            {
+                backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);  // 交替背景色
+                foreColor = Color.Black;  // 默认文字色
+            }
+
             using (var brush = new SolidBrush(backColor))
-            using (var textBrush = new SolidBrush(Color.Black))
+            using (var textBrush = new SolidBrush(foreColor))
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
-                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, Color.Black);
+                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, foreColor);
             }
         }
     }
