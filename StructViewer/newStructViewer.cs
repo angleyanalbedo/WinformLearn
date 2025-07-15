@@ -46,6 +46,8 @@ namespace StructViewer
         //气泡提示
         private NotifyIcon _ni;
 
+        private ListViewItem hoveredItem = null;
+
         public newStructViewer()
         {
             InitializeComponent();
@@ -105,15 +107,15 @@ namespace StructViewer
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 9F)
             };
-           // searchBox.TextChanged += (s, e) => ApplySearch(searchBox.Text);
+            searchBox.KeyDown += SearchBox_KeyDown;
 
             tool.Items.AddRange(new ToolStripItem[]
             {
-        new ToolStripLabel("搜索:") { ForeColor = Color.FromArgb(64,64,64)},
-        searchBox,
-        new ToolStripSeparator(),
-        new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Application.ToBitmap(), ImageTransparentColor = Color.Magenta },
-        new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Shield.ToBitmap(), ImageTransparentColor = Color.Magenta }
+                new ToolStripLabel("搜索:") { ForeColor = Color.FromArgb(64,64,64)},
+                searchBox,
+                new ToolStripSeparator(),
+                new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Application.ToBitmap(), ImageTransparentColor = Color.Magenta },
+                new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Shield.ToBitmap(), ImageTransparentColor = Color.Magenta }
             });
 
             /* ===== 主容器：使用 ToolStripContainer（顶部工具栏 + 内容区） ===== */
@@ -125,23 +127,26 @@ namespace StructViewer
             tree = new TreeView
             {
                 Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.Fixed3D,
+                BorderStyle = BorderStyle.None,
+                BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
-                ShowLines = false,
-                ShowRootLines = false,                      // 去掉连线
+                ShowLines = true,
+                ShowRootLines = false,
                 HideSelection = false,
-                DrawMode = TreeViewDrawMode.OwnerDrawText   // 自己控制绘画
+                DrawMode = TreeViewDrawMode.OwnerDrawText   // 下面画高亮
             };
-            tree.FullRowSelect = false;
-            tree.HotTracking = false;                            // 悬浮高亮                     
+            tree.FullRowSelect = true;
+            tree.HotTracking = true;                            // 悬浮高亮
+            tree.ShowLines = false;                           // 去掉连线
             tree.ShowPlusMinus = false;                           // 去掉 +/-
-            tree.BackColor = Color.White;
             tree.Font = new Font("Segoe UI Variable", 9.75f, FontStyle.Regular);
             tree.ItemHeight = tree.Font.Height + 8;            // 行高 = 字体高 + 8
             tree.AfterSelect += Tree_AfterSelect;
             tree.MouseUp += Tree_MouseUp;
             tree.DrawNode += Tree_DrawNode;
             tree.NodeMouseClick += Tree_NodeMouseClick;
+
+            
 
             /* ===== 右侧列表 ===== */
             list = new ListView
@@ -153,21 +158,34 @@ namespace StructViewer
                 View = View.Details,
                 FullRowSelect = true,
                 GridLines = false,                // 取消网格线更清爽
-                HeaderStyle = ColumnHeaderStyle.Clickable //设置可以点击
+                HeaderStyle = ColumnHeaderStyle.Clickable, //设置可以点击
+                OwnerDraw = true  // 启用自定义绘制
             };
             list.Columns.Add("名称", 150);
             list.Columns.Add("类型", 120);
             list.Columns.Add("偏移", 70, HorizontalAlignment.Right);
             list.Columns.Add("大小", 70, HorizontalAlignment.Right);
             list.Columns.Add("备注", -2);           // -2 = 填满剩余宽度
+
+            list.HideSelection = true;
+
             list.DoubleClick += List_DoubleClick;
             list.MouseUp += List_MouseUp;
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
+            list.MouseEnter += List_MouseEnter;
+            list.MouseLeave += List_MouseLeave;
+            list.MouseMove += List_MouseMove;
 
-            list.OwnerDraw = true;                 // 开启自定义绘制
-            //list.DrawItem += List_DrawItem;
+
+            list.DrawItem += List_DrawItem;
             list.DrawSubItem += List_DrawSubItem;
             list.DrawColumnHeader += List_DrawColumnHeader;
+
+            
+
+            list.MouseClick += List_MouseClick;  // Replace ItemMouseClick with MouseClick
+
+
 
             /* ===== 分割容器 ===== */
             split = new SplitContainer
@@ -301,30 +319,53 @@ namespace StructViewer
             list.Items.Add(lvi);
         }
 
-        /* ===== 搜索高亮 ===== */
-        private void ApplySearch(string text)
+        private void AddStructToList(StructInfo s)
         {
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                foreach (TreeNode ns in tree.Nodes)
-                    foreach (TreeNode st in ns.Nodes)
-                        st.BackColor = SystemColors.Window;
-                return;
-            }
+            var lvi = new ListViewItem(s.Name);
+            lvi.SubItems.Add(s.Namespace);
+            lvi.SubItems.Add("0");
+            lvi.SubItems.Add(s.Size.ToString());
+            lvi.SubItems.Add( "");
+            lvi.Tag = s;
+            list.Items.Add(lvi);
 
-            var low = text.ToLower();
-            foreach (TreeNode ns in tree.Nodes)
+        }
+
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter) return;
+
+            string keyword = searchBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(keyword)) return;
+
+            // 从根开始搜索
+            TreeNode found = FindFirstNode(tree.Nodes, n =>
+                n.Text.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                (n.Tag is StructInfo st && st.Members.Any(m =>
+                    m.Name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    m.Type.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)));
+
+            if (found != null)
             {
-                foreach (TreeNode st in ns.Nodes)
-                {
-                    st.BackColor =
-                        st.Text.ToLower().Contains(low) ||
-                        ((StructInfo)st.Tag).Members.Any(m =>
-                            m.Name.ToLower().Contains(low) ||
-                            m.Type.ToLower().Contains(low))
-                        ? Color.Yellow : SystemColors.Window;
-                }
+                tree.SelectedNode = found;   // 选中
+                found.EnsureVisible();       // 滚动到视野
             }
+        }
+
+        // 递归搜索
+        // 把递归顺序调过来：先子后父 防止永远只找到上一级
+        private TreeNode FindFirstNode(TreeNodeCollection nodes, Func<TreeNode, bool> predicate)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                // 1) 先往下找
+                TreeNode child = FindFirstNode(n.Nodes, predicate);
+                if (child != null) return child;
+
+                // 2) 再检查当前节点
+                if (predicate(n)) return n;
+            }
+            return null;
         }
 
         /* ===== 双击成员复制名称 ===== */
@@ -436,6 +477,15 @@ namespace StructViewer
             Graphics g = e.Graphics;
             Rectangle r = e.Bounds;
 
+            /* ===== 背景（默认白色背景） ===== */
+            r.Height = tree.ItemHeight;
+            r.Width = tree.Width;
+            r.X = tree.Left;
+            using (var brush = new SolidBrush(Color.White))  // 默认背景色
+            {
+                g.FillRectangle(brush, r);
+            }
+
             /* ===== 背景（圆角、高亮等） ===== */
             Color backColor = (e.State & TreeNodeStates.Selected) != 0
                               ? Color.FromArgb(0x99, 0xCB, 0xFF)  // 选中为蓝色
@@ -456,7 +506,7 @@ namespace StructViewer
 
 
             // 背景矩形需要减去箭头的宽度
-            int arrowWidth = e.Node.Nodes.Count > 0 ? 20 : 0; // 箭头宽度
+            int arrowWidth = e.Node.Nodes.Count > 0 ? 18 : 0; // 箭头宽度
             Rectangle backgroundRect = new Rectangle(r.X + arrowWidth, r.Y, r.Width + arrowWidth, r.Height);
 
             using (var path = RoundedRect(backgroundRect, 4))
@@ -541,8 +591,8 @@ namespace StructViewer
 
         private void List_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
         {
-            using (var brush = new SolidBrush(Color.FromArgb(240, 240, 240)))
-            using (var textBrush = new SolidBrush(Color.Black))
+            using (var brush = new SolidBrush(Color.FromArgb(240, 240, 240)))  // 列头背景色
+            using (var textBrush = new SolidBrush(Color.Black))  // 列头文字色
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
                 TextRenderer.DrawText(e.Graphics, e.Header.Text, list.Font, e.Bounds, Color.Black);
@@ -551,25 +601,84 @@ namespace StructViewer
 
         private void List_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            using (var brush = new SolidBrush(Color.White))
+            // 设置背景色
+            Color backColor;
+            if (e.Item.Selected)
+            {
+                backColor = Color.FromArgb(0x99, 0xCB, 0xFF);  // 选中背景色
+            }
+            else if (e.Item == hoveredItem)
+            {
+                backColor = Color.LightBlue;  // 鼠标悬停背景色
+            }
+            else
+            {
+                backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);  // 交替背景色
+            }
+
+            using (var brush = new SolidBrush(backColor))
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
             }
+
+            // 不使用系统默认绘制
+            e.DrawDefault = false;
         }
 
         private void List_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            // 根据行索引的奇偶性设置背景色
-            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
-            using (var brush = new SolidBrush(backColor))
-            using (var textBrush = new SolidBrush(Color.Black))
+            // 设置文字颜色
+            Color foreColor;
+            if (e.Item.Selected || e.Item == hoveredItem)
             {
-                e.Graphics.FillRectangle(brush, e.Bounds);
-                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, Color.Black);
+                foreColor = Color.White;  // 选中或悬停时的文字色
+            }
+            else
+            {
+                foreColor = Color.Black;  // 默认文字色
+            }
+
+            using (var textBrush = new SolidBrush(foreColor))
+            {
+                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, foreColor);
             }
         }
-    }
 
+
+
+        private void List_MouseClick(object sender, MouseEventArgs e)
+        {
+            var hit = list.HitTest(e.Location);
+            if (hit.Item != null)
+            {
+                list.SelectedItems.Clear();
+                hit.Item.Selected = true;
+            }
+        }
+
+        private void List_MouseEnter(object sender, EventArgs e)
+        {
+            var pt = list.PointToClient(Cursor.Position);
+            hoveredItem = list.GetItemAt(pt.X, pt.Y);
+            list.Invalidate();  // 触发重绘
+        }
+
+        private void List_MouseLeave(object sender, EventArgs e)
+        {
+            hoveredItem = null;
+            list.Invalidate();  // 触发重绘
+        }
+        private void List_MouseMove(object sender, MouseEventArgs e)
+        {
+            var hit = list.HitTest(e.Location);
+            if (hit.Item != hoveredItem)
+            {
+                hoveredItem = hit.Item;
+                list.Invalidate();  // 触发重绘
+            }
+        }
+
+    }
     public class ListViewItemComparer : IComparer
     {
         private int col;
