@@ -144,6 +144,8 @@ namespace StructViewer
             tree.DrawNode += Tree_DrawNode;
             tree.NodeMouseClick += Tree_NodeMouseClick;
 
+            
+
             /* ===== 右侧列表 ===== */
             list = new ListView
             {
@@ -152,9 +154,10 @@ namespace StructViewer
                 BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
                 View = View.Details,
-                FullRowSelect = true,
+                FullRowSelect = false,
                 GridLines = false,                // 取消网格线更清爽
-                HeaderStyle = ColumnHeaderStyle.Clickable //设置可以点击
+                HeaderStyle = ColumnHeaderStyle.Clickable, //设置可以点击
+                OwnerDraw = true  // 启用自定义绘制
             };
             list.Columns.Add("名称", 150);
             list.Columns.Add("类型", 120);
@@ -164,6 +167,11 @@ namespace StructViewer
             list.DoubleClick += List_DoubleClick;
             list.MouseUp += List_MouseUp;
             list.ColumnClick += List_ColumnClick;  // 注册排序事件
+
+
+            //list.DrawItem += List_DrawItem;
+            list.DrawSubItem += List_DrawSubItem;
+            list.DrawColumnHeader += List_DrawColumnHeader;
 
             /* ===== 分割容器 ===== */
             split = new SplitContainer
@@ -542,6 +550,38 @@ namespace StructViewer
 
             list.ListViewItemSorter = new ListViewItemComparer(e.Column, list.Sorting);
             list.Sort();
+        }
+
+        private void List_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            using (var brush = new SolidBrush(Color.FromArgb(240, 240, 240)))  // 列头背景色
+            using (var textBrush = new SolidBrush(Color.Black))  // 列头文字色
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, e.Header.Text, list.Font, e.Bounds, Color.Black);
+            }
+        }
+
+        private void List_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            // 根据行索引的奇偶性设置背景色
+            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            using (var brush = new SolidBrush(backColor))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+        }
+
+        private void List_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            // 根据行索引的奇偶性设置背景色
+            Color backColor = e.ItemIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            using (var brush = new SolidBrush(backColor))
+            using (var textBrush = new SolidBrush(Color.Black))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, Color.Black);
+            }
         }
     }
     public class ListViewItemComparer : IComparer
