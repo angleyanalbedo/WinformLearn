@@ -48,6 +48,7 @@ namespace StructViewer
         public newStructViewer()
         {
             InitializeComponent();
+            this.ShowIcon = false;
             BuildUI();
             LoadSample();
         }
@@ -103,7 +104,7 @@ namespace StructViewer
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 9F)
             };
-            searchBox.TextChanged += (s, e) => ApplySearch(searchBox.Text);
+           // searchBox.TextChanged += (s, e) => ApplySearch(searchBox.Text);
 
             tool.Items.AddRange(new ToolStripItem[]
             {
@@ -429,17 +430,27 @@ namespace StructViewer
             Graphics g = e.Graphics;
             Rectangle r = e.Bounds;
 
-            /* === 背景 === */
+            /* ===== 背景（圆角、高亮等） ===== */
             Color backColor = (e.State & TreeNodeStates.Selected) != 0
-                         ? Color.FromArgb(0x99, 0xCB, 0xFF)  // 选中为蓝色
-                         : (e.State & TreeNodeStates.Hot) != 0
-                           ? Color.FromArgb(0xF3, 0xF3, 0xF3)
-                           : Color.White;
+                              ? Color.FromArgb(0x99, 0xCB, 0xFF)  // 选中为蓝色
+                              : (e.State & TreeNodeStates.Hot) != 0
+                                ? Color.FromArgb(0xF3, 0xF3, 0xF3)  // 悬浮为淡灰色
+                                : SystemColors.Window;  // 默认背景色
+
+            //// 检查是否匹配搜索条件
+            //if (!string.IsNullOrWhiteSpace(searchBox.Text))
+            //{
+            //    var low = searchBox.Text.ToLower();
+            //    if (e.Node.Text.ToLower().Contains(low))
+            //    {
+            //        backColor = Color.Yellow;  // 匹配则高亮
+            //    }
+            //}
 
 
 
             // 背景矩形需要减去箭头的宽度
-            int arrowWidth = e.Node.Nodes.Count > 0 ? 16 : 0; // 箭头宽度
+            int arrowWidth = e.Node.Nodes.Count > 0 ? 18 : 0; // 箭头宽度
             Rectangle backgroundRect = new Rectangle(r.X + arrowWidth, r.Y, r.Width + arrowWidth, r.Height);
 
             using (var path = RoundedRect(backgroundRect, 4))
