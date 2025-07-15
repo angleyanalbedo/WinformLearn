@@ -432,6 +432,15 @@ namespace StructViewer
             Graphics g = e.Graphics;
             Rectangle r = e.Bounds;
 
+            /* ===== 背景（默认白色背景） ===== */
+            r.Height = tree.ItemHeight;
+            r.Width = tree.Width;
+            r.X = tree.Left;
+            using (var brush = new SolidBrush(Color.White))  // 默认背景色
+            {
+                g.FillRectangle(brush, r);
+            }
+
             /* ===== 背景（圆角、高亮等） ===== */
             Color backColor = (e.State & TreeNodeStates.Selected) != 0
                               ? Color.FromArgb(0x99, 0xCB, 0xFF)  // 选中为蓝色
