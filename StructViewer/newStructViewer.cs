@@ -109,11 +109,11 @@ namespace StructViewer
 
             tool.Items.AddRange(new ToolStripItem[]
             {
-        new ToolStripLabel("搜索:") { ForeColor = Color.FromArgb(64,64,64)},
-        searchBox,
-        new ToolStripSeparator(),
-        new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Application.ToBitmap(), ImageTransparentColor = Color.Magenta },
-        new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Shield.ToBitmap(), ImageTransparentColor = Color.Magenta }
+                new ToolStripLabel("搜索:") { ForeColor = Color.FromArgb(64,64,64)},
+                searchBox,
+                new ToolStripSeparator(),
+                new ToolStripButton("刷新", null, (s,e)=>LoadSample()){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Application.ToBitmap(), ImageTransparentColor = Color.Magenta },
+                new ToolStripButton("复制名称", null, CopySelectedName){ DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, Image = SystemIcons.Shield.ToBitmap(), ImageTransparentColor = Color.Magenta }
             });
 
             /* ===== 主容器：使用 ToolStripContainer（顶部工具栏 + 内容区） ===== */
@@ -154,7 +154,7 @@ namespace StructViewer
                 BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5F),
                 View = View.Details,
-                FullRowSelect = false,
+                FullRowSelect = true,
                 GridLines = false,                // 取消网格线更清爽
                 HeaderStyle = ColumnHeaderStyle.Clickable, //设置可以点击
                 OwnerDraw = true  // 启用自定义绘制
@@ -172,6 +172,11 @@ namespace StructViewer
             list.DrawItem += List_DrawItem;
             list.DrawSubItem += List_DrawSubItem;
             list.DrawColumnHeader += List_DrawColumnHeader;
+
+            
+
+            list.MouseClick += List_MouseClick;  // Replace ItemMouseClick with MouseClick
+
 
             /* ===== 分割容器 ===== */
             split = new SplitContainer
@@ -620,6 +625,16 @@ namespace StructViewer
             {
                 e.Graphics.FillRectangle(brush, e.Bounds);
                 TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, foreColor);
+            }
+        }
+
+        private void List_MouseClick(object sender, MouseEventArgs e)
+        {
+            var hit = list.HitTest(e.Location);
+            if (hit.Item != null)
+            {
+                list.SelectedItems.Clear();
+                hit.Item.Selected = true;
             }
         }
     }
