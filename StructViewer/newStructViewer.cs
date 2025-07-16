@@ -47,7 +47,7 @@ namespace StructViewer
         private NotifyIcon _ni;
 
         private ListViewItem hoveredItem = null;
-
+        private Point lastMousePosition = Point.Empty;
         public newStructViewer()
         {
             InitializeComponent();
@@ -665,16 +665,39 @@ namespace StructViewer
 
         private void List_MouseLeave(object sender, EventArgs e)
         {
-            hoveredItem = null;
-            list.Invalidate();  // 触发重绘
+            if(hoveredItem != null)
+            {
+                list.Invalidate(hoveredItem.Bounds);  // 触发重绘
+                hoveredItem = null;  // 清除悬停状态
+            }
+            
         }
         private void List_MouseMove(object sender, MouseEventArgs e)
         {
+            // 检查鼠标移动距离是否超过阈值
+            if (lastMousePosition != Point.Empty &&
+                Math.Abs(lastMousePosition.X - e.X) < 5 &&
+                Math.Abs(lastMousePosition.Y - e.Y) < 5)
+            {
+                // 鼠标移动距离小于阈值，不重绘
+                return;
+            }
+
+            lastMousePosition = e.Location;
+
             var hit = list.HitTest(e.Location);
             if (hit.Item != hoveredItem)
             {
+                // 只重绘发生变化的行
+                if (hoveredItem != null)
+                {
+                    list.Invalidate(hoveredItem.Bounds);
+                }
                 hoveredItem = hit.Item;
-                list.Invalidate();  // 触发重绘
+                if (hoveredItem != null)
+                {
+                    list.Invalidate(hoveredItem.Bounds);
+                }
             }
         }
 
