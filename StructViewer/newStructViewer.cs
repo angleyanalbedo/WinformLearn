@@ -299,7 +299,13 @@ namespace StructViewer
                     AddMemberToList(m);
                     status.Items[0].Text = $"成员: {m.Name}  (偏移 {m.Offset}, 大小 {m.Size})";
                     break;
-
+                case string ns:
+                    // 显示该命名空间下的所有结构体
+                    var structs = sampleData.Where(s => s.Namespace == ns).ToList();
+                    foreach (var s in structs)
+                        AddStructToList(s);
+                    status.Items[0].Text = $"命名空间: {ns}, 结构体: {structs.Count}";
+                    break;
                 default:
                     status.Items[0].Text = "就绪";
                     break;
