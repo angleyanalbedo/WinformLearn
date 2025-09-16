@@ -7,7 +7,7 @@
     {
         class Program
         {
-            static void Main(string[] args)
+            static void NanTest()
             {
                 Console.WriteLine("C# Float 精度丢失示例");
                 Console.WriteLine("=====================");
@@ -61,6 +61,18 @@
                 Console.ReadKey();
             }
 
+            static void Main(string[] args)
+            {
+                InteDiv();
+            }
+
+            static void InteDiv()
+            {
+                int h = 161;
+                double res = 2.0;
+                res = res - h / 2;
+                Console.WriteLine(res);
+            }
             // 使用容差比较浮点数
             static bool ApproximatelyEqual(float a, float b, float tolerance)
             {
