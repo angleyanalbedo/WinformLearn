@@ -81,7 +81,7 @@
             Controls.Add(listBox2);
             Controls.Add(listBox1);
             Name = "Form1";
-            Text = "Form1";
+            Text = "补丁生成器";
             ResumeLayout(false);
         }
 
