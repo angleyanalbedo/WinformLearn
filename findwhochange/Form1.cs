@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.RegularExpressions;
+
 namespace findwhochange
 {
     public partial class Form1 : Form
@@ -92,6 +95,44 @@ namespace findwhochange
 
             if (listBox3.Items.Count == 0)
                 listBox3.Items.Add("(两个列表完全一致)");
+        }
+        private void btnExportCsv_Click(object sender, EventArgs e)
+        {
+            if (listBox3.Items.Count == 0)
+            {
+                MessageBox.Show("没有可导出的数据！");
+                return;
+            }
+
+            using (var sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "CSV 文件|*.csv";
+                sfd.FileName = $"CompareResult_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    // 写 UTF-8 带 BOM，Excel 打开不乱码
+                    using (var sw = new StreamWriter(sfd.FileName, false, Encoding.UTF8))
+                    {
+                        sw.WriteLine("状态,文件名");          // 表头
+                        foreach (var line in listBox3.Items.Cast<string>())
+                        {
+                            // 解析前缀 [状态] 文件名
+                            var match = Regex.Match(line, @"^\[(.+?)\]\s+(.+)$");
+                            if (match.Success)
+                                sw.WriteLine($"{match.Groups[1].Value},{match.Groups[2].Value}");
+                            else          // 兜底，如“完全一致”
+                                sw.WriteLine($",{line}");
+                        }
+                    }
+                    MessageBox.Show("导出完成！");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("导出失败：" + ex.Message);
+                }
+            }
         }
     }
 }

@@ -31,6 +31,7 @@
             listBox1 = new ListBox();
             listBox2 = new ListBox();
             listBox3 = new ListBox();
+            buttonExportcsv = new Button();
             SuspendLayout();
             // 
             // listBox1
@@ -60,11 +61,22 @@
             listBox3.Size = new Size(1230, 220);
             listBox3.TabIndex = 2;
             // 
+            // buttonExportcsv
+            // 
+            buttonExportcsv.Location = new Point(559, 616);
+            buttonExportcsv.Name = "buttonExportcsv";
+            buttonExportcsv.Size = new Size(154, 34);
+            buttonExportcsv.TabIndex = 3;
+            buttonExportcsv.Text = "导出csv";
+            buttonExportcsv.UseVisualStyleBackColor = true;
+            buttonExportcsv.Click += btnExportCsv_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1254, 627);
+            ClientSize = new Size(1254, 662);
+            Controls.Add(buttonExportcsv);
             Controls.Add(listBox3);
             Controls.Add(listBox2);
             Controls.Add(listBox1);
@@ -78,5 +90,6 @@
         private ListBox listBox1;
         private ListBox listBox2;
         private ListBox listBox3;
+        private Button buttonExportcsv;
     }
 }
