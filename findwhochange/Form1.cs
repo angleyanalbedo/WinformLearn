@@ -56,16 +56,42 @@ namespace findwhochange
         /* ---------- 核心比较 ---------- */
         private void CompareNow()
         {
-            var set1 = new HashSet<string>(listBox1.Items.Cast<string>());
-            var onlyIn2 = listBox2.Items.Cast<string>()
-                                .Where(f => !set1.Contains(f))
-                                .ToArray();
+            // 只取文件名
+            var name1 = new HashSet<string>(
+                            listBox1.Items.Cast<string>()
+                                  .Select(f => Path.GetFileName(f)));
+            var name2 = new HashSet<string>(
+                            listBox2.Items.Cast<string>()
+                                  .Select(f => Path.GetFileName(f)));
 
             listBox3.Items.Clear();
-            if (onlyIn2.Length == 0)
-                listBox3.Items.Add("(没有不同的文件)");
-            else
-                listBox3.Items.AddRange(onlyIn2);
+
+            /* 1. 缺少：ListBox1 有，ListBox2 没有 */
+            foreach (var n in name1.Where(n => !name2.Contains(n)))
+                listBox3.Items.Add($"[缺少]  {n}");
+
+            /* 2. 新增：ListBox2 有，ListBox1 没有 */
+            foreach (var n in name2.Where(n => !name1.Contains(n)))
+                listBox3.Items.Add($"[新增]  {n}");
+
+            /* 3. 已修改：同名但内容不同 */
+            foreach (var name in name1.Intersect(name2))
+            {
+                // 先找回完整路径
+                var path1 = listBox1.Items.Cast<string>()
+                                  .First(f => Path.GetFileName(f) == name);
+                var path2 = listBox2.Items.Cast<string>()
+                                  .First(f => Path.GetFileName(f) == name);
+
+                bool same = File.Exists(path1) &&
+                            File.Exists(path2) &&
+                            File.ReadAllBytes(path1).SequenceEqual(File.ReadAllBytes(path2));
+                if (!same)
+                    listBox3.Items.Add($"[已修改]  {name}");
+            }
+
+            if (listBox3.Items.Count == 0)
+                listBox3.Items.Add("(两个列表完全一致)");
         }
     }
 }
