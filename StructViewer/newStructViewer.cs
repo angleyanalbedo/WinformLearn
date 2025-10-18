@@ -31,8 +31,8 @@ namespace StructViewer
         {
             public string Name { get; set; }
             public string Type { get; set; }
-            public int Offset { get; set; }
-            public int Size { get; set; }
+            public long Offset { get; set; }
+            public long Size { get; set; }
             public string Comment { get; set; }
         }
 
@@ -47,7 +47,7 @@ namespace StructViewer
         private NotifyIcon _ni;
 
         private ListViewItem hoveredItem = null;
-
+        private Point lastMousePosition = Point.Empty;
         public newStructViewer()
         {
             InitializeComponent();
@@ -299,7 +299,13 @@ namespace StructViewer
                     AddMemberToList(m);
                     status.Items[0].Text = $"成员: {m.Name}  (偏移 {m.Offset}, 大小 {m.Size})";
                     break;
-
+                case string ns:
+                    // 显示该命名空间下的所有结构体
+                    var structs = sampleData.Where(s => s.Namespace == ns).ToList();
+                    foreach (var s in structs)
+                        AddStructToList(s);
+                    status.Items[0].Text = $"命名空间: {ns}, 结构体: {structs.Count}";
+                    break;
                 default:
                     status.Items[0].Text = "就绪";
                     break;
@@ -318,7 +324,6 @@ namespace StructViewer
             lvi.Tag = m;
             list.Items.Add(lvi);
         }
-
         private void AddStructToList(StructInfo s)
         {
             var lvi = new ListViewItem(s.Name);
@@ -330,7 +335,6 @@ namespace StructViewer
             list.Items.Add(lvi);
 
         }
-
         private void SearchBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter) return;
@@ -430,7 +434,7 @@ namespace StructViewer
             cms.Show(list, e.Location);
         }
 
-        // TreeView右键
+        //TreeView右键
         private void Tree_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right) return;
@@ -543,7 +547,6 @@ namespace StructViewer
                                   fore,
                                   TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
         }
-
         // 生成圆角矩形路径
         private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
         {
@@ -660,16 +663,39 @@ namespace StructViewer
         }
         private void List_MouseLeave(object sender, EventArgs e)
         {
-            hoveredItem = null;
-            list.Invalidate();  // 触发重绘
+            if(hoveredItem != null)
+            {
+                list.Invalidate(hoveredItem.Bounds);  // 触发重绘
+                hoveredItem = null;  // 清除悬停状态
+            }
+            
         }
         private void List_MouseMove(object sender, MouseEventArgs e)
         {
+            // 检查鼠标移动距离是否超过阈值
+            if (lastMousePosition != Point.Empty &&
+                Math.Abs(lastMousePosition.X - e.X) < 5 &&
+                Math.Abs(lastMousePosition.Y - e.Y) < 5)
+            {
+                // 鼠标移动距离小于阈值，不重绘
+                return;
+            }
+
+            lastMousePosition = e.Location;
+
             var hit = list.HitTest(e.Location);
             if (hit.Item != hoveredItem)
             {
+                // 只重绘发生变化的行
+                if (hoveredItem != null)
+                {
+                    list.Invalidate(hoveredItem.Bounds);
+                }
                 hoveredItem = hit.Item;
-                list.Invalidate();  // 触发重绘
+                if (hoveredItem != null)
+                {
+                    list.Invalidate(hoveredItem.Bounds);
+                }
             }
         }
     }
@@ -701,6 +727,73 @@ namespace StructViewer
                 result = -result;
 
             return result;
+        }
+    }
+
+    public class StructSizeCalculator
+    {
+        // 定义类型到大小的映射
+        private static readonly Dictionary<string, int> TypeSizeMap = new Dictionary<string, int>
+        {
+            { "LREAD", 8 }, 
+            { "DINT", 4 },  
+            { "INT", 2 },
+            {"UINT",2 },
+            { "UDINT", 4 }, 
+            { "LINT", 8 }, 
+            { "ULINT", 8 }, 
+            { "REAL32", 4 }, 
+            { "REAL64", 8 }, 
+            { "STRING2", 2 }, // 假设字符串类型大小为2字节
+            { "STRING4", 4 }, // 假设字符串类型大小为4字节
+            { "STRING8", 8 }, // 假设字符串类型大小为8字节
+            { "BOOL", 1 }, 
+            { "BYTE", 1 }, 
+            { "WORD", 2 }, 
+            { "DWORD", 4 }, 
+            { "REAL", 4 }, 
+            { "STRING", 256 }, // 假设字符串最大长度为256
+            { "DATE", 8 }, // 假设日期类型大小为8字节
+            { "TIME", 8 }, // 假设时间类型大小为8字节
+            {"SINT" ,1}
+        };
+
+        // 检查是否是指针类型
+        private static bool IsPointerType(string type)
+        {
+            return type.EndsWith("*");
+        }
+
+        // 获取类型的大小
+        private static int GetTypeSize(string type)
+        {
+            if (IsPointerType(type))
+            {
+                return 8; // 指针类型大小为8字节
+            }
+
+            if (TypeSizeMap.TryGetValue(type, out int size))
+            {
+                return size;
+            }
+
+            throw new ArgumentException($"Unknown type: {type}");
+        }
+
+        // 计算结构体大小和成员偏移
+        public static void CalculateStructSizeAndOffsets(StructInfo structInfo)
+        {
+            long currentOffset = 0;
+
+            foreach (var member in structInfo.Members)
+            {
+                member.Size = GetTypeSize(member.Type);
+                member.Offset = currentOffset;
+
+                currentOffset += member.Size;
+            }
+
+            structInfo.Size = (int)currentOffset;
         }
     }
 }
