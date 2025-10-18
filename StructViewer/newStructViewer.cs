@@ -643,9 +643,6 @@ namespace StructViewer
                 TextRenderer.DrawText(e.Graphics, e.SubItem.Text, list.Font, e.Bounds, foreColor);
             }
         }
-
-
-
         private void List_MouseClick(object sender, MouseEventArgs e)
         {
             var hit = list.HitTest(e.Location);
@@ -655,14 +652,12 @@ namespace StructViewer
                 hit.Item.Selected = true;
             }
         }
-
         private void List_MouseEnter(object sender, EventArgs e)
         {
             var pt = list.PointToClient(Cursor.Position);
             hoveredItem = list.GetItemAt(pt.X, pt.Y);
             list.Invalidate();  // 触发重绘
         }
-
         private void List_MouseLeave(object sender, EventArgs e)
         {
             hoveredItem = null;
@@ -677,7 +672,6 @@ namespace StructViewer
                 list.Invalidate();  // 触发重绘
             }
         }
-
     }
     public class ListViewItemComparer : IComparer
     {
