@@ -12,13 +12,14 @@ namespace SimpleCommandLineParser
         {
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].StartsWith("--"))
+                if (args[i].StartsWith("--") || args[i].StartsWith("-"))
                 {
-                    string key = args[i].Substring(2); // Remove the "--"
+                    string key = args[i].StartsWith("--") ? args[i].Substring(2) : args[i].Substring(1);
+
                     string value = null;
 
                     // Check if the next argument is not an option, then it's a value
-                    if (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                    if (i + 1 < args.Length && !(args[i + 1].StartsWith("--") || args[i+1].StartsWith("-")))
                     {
                         value = args[++i];
                     }
