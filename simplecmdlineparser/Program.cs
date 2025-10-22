@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace simplecmdlineparser
+namespace SimpleCommandLineParser
 {
-
-
     class CommandLineParser
     {
         private Dictionary<string, string> options = new Dictionary<string, string>();
+        private List<string> positionalArgs = new List<string>();
 
         public void Parse(string[] args)
         {
@@ -29,6 +25,11 @@ namespace simplecmdlineparser
 
                     options[key] = value;
                 }
+                else
+                {
+                    // 不带 -- 的视为位置参数
+                    positionalArgs.Add(args[i]);
+                }
             }
         }
 
@@ -46,18 +47,26 @@ namespace simplecmdlineparser
             return null;
         }
 
+        public List<string> GetPositionalArgs()
+        {
+            return positionalArgs;
+        }
+
         public void PrintHelp()
         {
-            Console.WriteLine("Usage: program [options]");
+            Console.WriteLine("Usage: program [options] [positional arguments]");
             Console.WriteLine("Options:");
             Console.WriteLine("  --src <file>   Source file");
             Console.WriteLine("  --dst <file>   Destination file");
             Console.WriteLine("  --force        Force overwrite");
             Console.WriteLine("  -h, --help     Show this help message");
+            Console.WriteLine("Positional arguments:");
+            Console.WriteLine("  <arg1>         First positional argument");
+            Console.WriteLine("  <arg2>         Second positional argument");
         }
     }
 
-    in class Program
+    internal class Program
     {
         static void Main(string[] args)
         {
@@ -74,6 +83,8 @@ namespace simplecmdlineparser
             string dst = parser.GetOption("dst");
             bool force = parser.HasOption("force");
 
+            List<string> positionalArgs = parser.GetPositionalArgs();
+
             if (string.IsNullOrEmpty(src) || string.IsNullOrEmpty(dst))
             {
                 Console.WriteLine("Error: --src and --dst are required.");
@@ -84,7 +95,11 @@ namespace simplecmdlineparser
             Console.WriteLine($"Source file: {src}");
             Console.WriteLine($"Destination file: {dst}");
             Console.WriteLine($"Force overwrite: {force}");
+            Console.WriteLine("Positional arguments:");
+            foreach (var arg in positionalArgs)
+            {
+                Console.WriteLine($"  {arg}");
+            }
         }
     }
- 
 }
