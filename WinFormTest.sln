@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "applyPatch", "applyPatch\ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleHttpServer", "SimpleHttpServer\SimpleHttpServer.csproj", "{B822BD08-0119-4C44-A8CD-E8ADECE204C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xml2json", "xml2json\xml2json.csproj", "{7D734951-3B74-4F46-8555-8AACA1F11E92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,10 @@ Global
 		{B822BD08-0119-4C44-A8CD-E8ADECE204C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B822BD08-0119-4C44-A8CD-E8ADECE204C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B822BD08-0119-4C44-A8CD-E8ADECE204C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D734951-3B74-4F46-8555-8AACA1F11E92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D734951-3B74-4F46-8555-8AACA1F11E92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D734951-3B74-4F46-8555-8AACA1F11E92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D734951-3B74-4F46-8555-8AACA1F11E92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
