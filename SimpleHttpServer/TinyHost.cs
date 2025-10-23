@@ -30,7 +30,7 @@ namespace TinyApi
 
         public void Run()
         {
-            Console.WriteLine($"TinyHost running on {_listener.Prefixes}");
+            Console.WriteLine("TinyHost running on " + string.Join(", ", _listener.Prefixes));
             while (true)
             {
                 var ctx = _listener.GetContext();
