@@ -27,18 +27,15 @@ public class SMBFileCopy
         string[] files = Directory.GetFiles(smbPath, "*.*", SearchOption.AllDirectories);
         string[] directories = Directory.GetDirectories(smbPath, "*.*", SearchOption.AllDirectories);
 
-        int totalFiles = files.Length;
+        // 过滤掉被排除的文件
+        var filteredFiles = files.Where(file => !ShouldExclude(file, excludePatterns)).ToArray();
+
+        int totalFiles = filteredFiles.Length;
         int filesCopied = 0;
 
         // 复制文件
-        foreach (string file in files)
+        foreach (string file in filteredFiles)
         {
-            // 检查是否需要排除
-            if (ShouldExclude(file, excludePatterns))
-            {
-                continue;
-            }
-
             string relativePath = file.Substring(smbPath.Length + 1); // 获取相对路径
             string destinationFilePath = Path.Combine(destinationPath, relativePath);
 
@@ -54,7 +51,8 @@ public class SMBFileCopy
 
             // 更新进度
             filesCopied++;
-            progressCallback((int)((double)filesCopied / totalFiles * 100));
+            int progress = (int)((double)filesCopied / totalFiles * 100);
+            progressCallback(progress);
         }
 
         // 复制文件夹结构（如果需要）
