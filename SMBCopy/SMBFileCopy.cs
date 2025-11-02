@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 public class SMBFileCopy
 {
-    public static void CopyFilesFromSMB(string smbPath, string destinationPath, List<string> excludePatterns)
+    public static void CopyFilesFromSMB(string smbPath, string destinationPath, List<string> excludePatterns, Action<int> progressCallback)
     {
         // 检查SMB路径和目标路径是否有效
         if (!Directory.Exists(smbPath))
@@ -26,6 +26,9 @@ public class SMBFileCopy
         // 获取SMB路径下的所有文件和文件夹
         string[] files = Directory.GetFiles(smbPath, "*.*", SearchOption.AllDirectories);
         string[] directories = Directory.GetDirectories(smbPath, "*.*", SearchOption.AllDirectories);
+
+        int totalFiles = files.Length;
+        int filesCopied = 0;
 
         // 复制文件
         foreach (string file in files)
@@ -48,6 +51,10 @@ public class SMBFileCopy
 
             // 复制文件
             File.Copy(file, destinationFilePath, true);
+
+            // 更新进度
+            filesCopied++;
+            progressCallback((int)((double)filesCopied / totalFiles * 100));
         }
 
         // 复制文件夹结构（如果需要）
