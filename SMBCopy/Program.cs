@@ -40,7 +40,7 @@ namespace SMBCopy
                 // 调用文件复制方法
                 SMBFileCopy.CopyFilesFromSMB(srcdir, dstdir, exclude, progress =>
                 {
-                    Console.WriteLine($"Progress: {progress}%");
+                    DisplayProgressBar(progress);
                 });
 
                 Console.WriteLine("文件复制完成！");
@@ -49,6 +49,19 @@ namespace SMBCopy
             {
                 Console.WriteLine("发生错误: " + ex.Message);
             }
+        }
+        private static void DisplayProgressBar(int progress)
+        {
+            const int progressBarWidth = 50; // 进度条宽度
+            int progressBars = (int)(progress / 100.0 * progressBarWidth);
+
+            // 清除上一行
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, Console.CursorTop);
+
+            // 绘制进度条
+            Console.Write($"Progress: [{new string('#', progressBars)}{new string('-', progressBarWidth - progressBars)}] {progress}%");
         }
     }
 }
