@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBCopy", "SMBCopy\SMBCopy.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "drawGrapha", "drawGrapha\drawGrapha.csproj", "{1BB93026-AFB6-4E2E-A7A5-BECC79992DF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmlGraphHelper", "xmlGraphHelper\xmlGraphHelper.csproj", "{7316EE60-01D8-4CE4-B6AC-313D50A93837}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{1BB93026-AFB6-4E2E-A7A5-BECC79992DF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BB93026-AFB6-4E2E-A7A5-BECC79992DF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BB93026-AFB6-4E2E-A7A5-BECC79992DF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
