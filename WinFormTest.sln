@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "drawGrapha", "drawGrapha\dr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmlGraphHelper", "xmlGraphHelper\xmlGraphHelper.csproj", "{7316EE60-01D8-4CE4-B6AC-313D50A93837}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stringprocess", "stringprocess\stringprocess.csproj", "{6547E84E-DE64-4E29-AE08-EFAF87AD1247}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,10 @@ Global
 		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7316EE60-01D8-4CE4-B6AC-313D50A93837}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6547E84E-DE64-4E29-AE08-EFAF87AD1247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6547E84E-DE64-4E29-AE08-EFAF87AD1247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6547E84E-DE64-4E29-AE08-EFAF87AD1247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6547E84E-DE64-4E29-AE08-EFAF87AD1247}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
