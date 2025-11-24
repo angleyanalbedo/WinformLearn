@@ -11,39 +11,38 @@ namespace stringprocess
 
     internal class Program
     {
-        public static List<List<int>> GetBraketRange(List<string> lists)
+        public static List<(int start, int end)> GetBracketContentRanges(List<string> lists)
         {
-            List<List<int>> res = new List<List<int>>();
-            int deep = -1;
-            foreach (string str in lists)
-            {
-                if (str.Trim().Equals("("))
-                {
-                    deep++;
-                    res.Add(new List<int>());
-                    res[deep].Add(lists.IndexOf(str));
-                }
-                else if (str.Trim().Equals(")") && deep == -1)
-                {
-                    return new List<List<int>>();
-                }
-                else if (str.Trim().Equals(")") && deep > -1)
-                {
-                    res[deep].Add(lists.IndexOf(str));
-                    deep--;
+            List<(int, int)> result = new List<(int, int)>();
+            Stack<int> stack = new Stack<int>();
 
-                }
-                else if (deep > -1)
-                {
-                    res[deep].Add(lists.IndexOf(str));
-                }
-            }
-            if (deep > -1)
+            for (int i = 0; i < lists.Count; i++)
             {
-                return new List<List<int>>();
+                string s = lists[i].Trim();
+
+                if (s == "(")
+                {
+                    stack.Push(i);
+                }
+                else if (s == ")")
+                {
+                    if (stack.Count == 0)
+                        return new List<(int, int)>();   // 多余右括号
+
+                    int start = stack.Pop();
+                    int contentStart = start + 1;
+                    int contentEnd = i - 1;
+
+                    result.Add((contentStart, contentEnd));
+                }
             }
-            return res;
+
+            if (stack.Count > 0)
+                return new List<(int, int)>();           // 多余左括号
+
+            return result;
         }
+
         static void Main(string[] args)
         {
         }
