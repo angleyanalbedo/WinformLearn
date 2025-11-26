@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -9,6 +10,10 @@ namespace ladderParser
 {
     internal static class Program
     {
+        public class Point{
+            public int X;
+            public int Y;
+        }
         public class LadderObject
         {
             public int ID;
@@ -17,6 +22,11 @@ namespace ladderParser
             public List<int> OutRefs;
             public List<int> InRefs;
 
+            public Point Index;
+            public override string ToString()
+            {
+                return $"ID: {ID}, Start: {Start}, End: {End}, OutRefs: [{string.Join(",", OutRefs)}], InRefs: [{string.Join(",", InRefs)}]";
+            }
             public LadderObject()
             {
                 OutRefs = new List<int>();
@@ -34,6 +44,19 @@ namespace ladderParser
                 obj.ID = (int)x.Element("ID");
                 obj.Start = (bool?)x.Element("Start") == true;
                 obj.End = (bool?)x.Element("End") == true;
+                var indexNode = x.Element("Index");
+                if (indexNode != null)
+                {
+                    string[] parts = indexNode.Value.Split(',');
+                    if (parts.Length == 2)
+                    {
+                        int xIndex, yIndex;
+                        if (int.TryParse(parts[1], out xIndex) && int.TryParse(parts[0], out yIndex))
+                        {
+                            obj.Index = new Point { X = xIndex, Y = yIndex };
+                        }
+                    }
+                }
 
                 var connectNode = x.Element("Connect");
                 if (connectNode != null)
@@ -85,15 +108,16 @@ namespace ladderParser
             public int InDegree = 0;      // 被多少节点连接
             public int OutDegree = 0;     // 有多少连接出去
         }
-        public static void CheckConnectivity(List<LadderObject> objs) 
+        public static List<Point> CheckConnectivity(List<LadderObject> objs) 
         {
             var map = objs.ToDictionary(o => o.ID);
             var conn = new Dictionary<int, ConnectionInfo>();
+            var results = new List<Point>();
 
             foreach (var o in objs)
                 conn[o.ID] = new ConnectionInfo();
 
-            // 检查所有 outrefs
+            // 检查所有 OutRefs，构建入度和出度信息
             foreach (var o in objs)
             {
                 foreach (var t in o.OutRefs)
@@ -119,17 +143,26 @@ namespace ladderParser
                 // 1. 完全孤立
                 if (!o.Start && !o.End && ci.InDegree == 0 && ci.OutDegree == 0)
                 {
+                    results.Add(o.Index);
                     Console.WriteLine("孤立节点：{0}", o.ID);
                     continue;
                 }
 
                 // 2. 没有连接左母线
                 if (!o.Start && ci.InDegree == 0)
+                {
+                    results.Add(o.Index);
                     Console.WriteLine("未连接左母线：{0}", o.ID);
+                }
+                    
 
                 // 3. 没有连接右母线
                 if (!o.End && ci.OutDegree == 0)
+                {
+                    results.Add(o.Index);
                     Console.WriteLine("未连接右母线：{0}", o.ID);
+                }
+                    
 
                 // 4. start=true 但仍然没人连？
                 if (o.Start && ci.InDegree > 0)
@@ -139,6 +172,7 @@ namespace ladderParser
                 if (o.End && ci.OutDegree > 0)
                     Console.WriteLine("警告：{0} 标记 end，但仍存在出边", o.ID);
             }
+            return results;
         }
 
         /// <summary>
@@ -151,7 +185,7 @@ namespace ladderParser
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
             var objs = ParseObjects("rung.xml");
-            CheckConnectivity(objs);
+            var res = CheckConnectivity(objs);
 
         }
     }
