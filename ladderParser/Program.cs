@@ -20,6 +20,7 @@ namespace ladderParser
             public LadderObject()
             {
                 OutRefs = new List<int>();
+                InRefs = new List<int>();
             }
         }
         public static List<LadderObject> ParseObjects(string xmlPath)
@@ -63,7 +64,6 @@ namespace ladderParser
                             var idAttr = refElem.Attribute("ID");
                             if (idAttr != null)
                             {
-                                int id;
                                 int inId;
                                 if (int.TryParse(idAttr.Value, out inId))
                                 {
