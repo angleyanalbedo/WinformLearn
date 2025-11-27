@@ -175,6 +175,121 @@ namespace ladderParser
             return results;
         }
 
+        public static void RemoveFbdAndUpdateLines(XDocument doc)
+        {
+            int FIXHEIGHT = 70;
+            int FIXWIDTH = 40;
+
+            var objects = doc.Descendants("Object").ToList();
+            var lineSegments = doc.Descendants("LineSegments").FirstOrDefault();
+            
+
+            if (lineSegments == null) return;
+
+            var lines = lineSegments.Elements("Line").ToList();
+
+            foreach (var fbd in objects)
+            {
+                var typeAttr = fbd.Attribute("Type");
+                if (typeAttr == null || typeAttr.Value != "FBD")
+                    continue;
+
+                // 1. 找 FBD 的 index 和 size
+                var indexElem = fbd.Element("Index");
+                var sizeElem = fbd.Element("Size");
+                var idElement = fbd.Element("ID");
+                if (idElement == null) continue;
+                if (sizeElem == null) continue;
+                if (indexElem == null) continue;
+
+                string[] idxParts = indexElem.Value.Split(',');
+                if (idxParts.Length != 2) continue;
+
+                string[] sizePart = sizeElem.Value.Split(',');
+                if (sizePart.Length != 2) continue;
+
+                int fx = int.Parse(idxParts[1]);
+                int fy = int.Parse(idxParts[0]);
+
+                int fwidth = int.Parse(sizePart[0]);
+                int fheight = int.Parse(sizePart[1]);
+
+
+                string fbdId = idElement.Value;
+
+                // 1. 找 FBD 的上游（谁指向它）
+                List<XElement> upstreamObjects = new List<XElement>();
+                foreach (var obj in objects)
+                {
+                    var outs = obj.Descendants("OUT").FirstOrDefault();
+                    if (outs == null) continue;
+
+                    foreach (var refid in outs.Elements("RefID"))
+                    {
+                        var idAttr = refid.Attribute("ID");
+                        if (idAttr != null && idAttr.Value == fbdId)
+                        {
+                            upstreamObjects.Add(obj);
+                            break;
+                        }
+                    }
+                }
+
+                // 2. 找 FBD 的下游（它指向谁）
+                List<string> downstreamIds = new List<string>();
+                var fbdOut = fbd.Descendants("OUT").FirstOrDefault();
+                if (fbdOut != null)
+                {
+                    foreach (var refid in fbdOut.Elements("RefID"))
+                    {
+                        var idAttr = refid.Attribute("ID");
+                        if (idAttr != null)
+                            downstreamIds.Add(idAttr.Value);
+                    }
+                }
+                // 3. 重建连接：上游 → 下游
+                foreach (var upObj in upstreamObjects)
+                {
+                    var upOut = upObj.Descendants("OUT").FirstOrDefault();
+                    if (upOut == null) continue;
+
+                    // 删除旧的 FBD 指向
+                    upOut.Elements("RefID")
+                         .Where(r => r.Attribute("ID") != null &&
+                                     r.Attribute("ID").Value == fbdId)
+                         .Remove();
+
+                    // 增加新的目标
+                    foreach (var dId in downstreamIds)
+                    {
+                        upOut.Add(
+                            new XElement("RefID",
+                                new XAttribute("ID", dId),
+                                "IN"
+                            )
+                        );
+                    }
+                }
+
+                // ========== 4. 更新 LineSegments ============
+
+                // 直接计算控件所占据的WIDTH Index 宽度添加一条新线
+
+                int controlIndexwith = (fwidth - 1) / FIXWIDTH;
+
+                lineSegments.Add(
+                    new XElement("Line",
+                            new XAttribute("StartIndex",$"{fx},{fy}"),
+                            new XAttribute("EndIndex",$"{fx+controlIndexwith},{fy}")
+                        )
+                    );
+
+                // ========== 5. 删除 FBD Object ============
+                fbd.Remove();
+            }
+        }
+
+
         /// <summary>
         /// 应用程序的主入口点。
         /// </summary>
@@ -184,8 +299,6 @@ namespace ladderParser
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
-            var objs = ParseObjects("rung.xml");
-            var res = CheckConnectivity(objs);
 
         }
     }
