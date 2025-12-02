@@ -177,7 +177,7 @@ namespace ladderParser
 
         public static void RemoveFbdAndUpdateLines(XDocument doc)
         {
-            int FIXHEIGHT = 70;
+            //int FIXHEIGHT = 70;
             int FIXWIDTH = 40;
 
             var objects = doc.Descendants("Object").ToList();
